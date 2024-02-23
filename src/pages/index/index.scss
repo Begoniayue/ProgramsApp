@@ -1,12 +1,14 @@
-.home-search{
-  border: 1px solid #fafafa;
-  border-radius: 4px;
-  background: gainsboro;
-}
 .home-search-wrap{
   display: flex;
   justify-content: space-between;
-  width: 90%;
+  padding: 10px;
+  .nut-searchbar__search-input{
+    width: 50%;
+    height: 50px;
+    border-radius: 30px;
+    border: 1px solid #ccc;
+    color: black;
+  }
 }
 .home-content{
   padding: 10px;

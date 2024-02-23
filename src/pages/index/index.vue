@@ -20,8 +20,10 @@
 
     <!--主体内容-->
     <view class="home-content">
-      <IconFont name="search" @click="showRight = true"></IconFont>
-      <nut-searchbar v-model="searchValue" @search="search" class="home-search"></nut-searchbar>
+      <view class="home-search-wrap">
+        <input v-model="searchValue" placeholder="Placeholder" />
+        <IconFont name="search" @click="showRight = true"></IconFont>
+      </view>
       <nut-popup v-model:visible="showRight" position="right" :style="{ width: '40%', height: '100%' }"></nut-popup>
       <nut-tabs v-model="tabValue" class="home-tabs">
         <nut-tab-pane title="VR效果图" pane-key="1"> VR效果图</nut-tab-pane>
@@ -34,8 +36,10 @@
 </template>
 
 <script setup>
+/*获取环境变量*/
+import { useAppEnvStore } from '../../stores/appEnvStore'
 import './index.scss'
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 /*阿里矢量图标库*/
 import { IconFont } from '@nutui/icons-vue-taro';
 /*轮播*/
@@ -47,7 +51,7 @@ const list = ref([
 ]);
 /*搜索*/
 import { Search2 } from '@nutui/icons-vue-taro';
-const searchValue = ref('');
+const searchValue = ref('请输入搜索内容');
 const search = (text) => {
   console.log('search', text);
 };
@@ -55,4 +59,10 @@ const showRight = ref(false);
 
 /**/
 const tabValue = ref('1');
+const useAppEnv = useAppEnvStore();
+
+onMounted(() => {
+  useAppEnv.init()
+  console.log(useAppEnv.currentEnv)
+})
 </script>
