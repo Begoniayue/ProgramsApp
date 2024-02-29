@@ -7,11 +7,24 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    Counter: typeof import('./src/components/Counter.vue')['default']
+    NutBacktop: typeof import('@nutui/nutui-taro')['Backtop']
+    NutButton: typeof import('@nutui/nutui-taro')['Button']
+    NutCell: typeof import('@nutui/nutui-taro')['Cell']
+    NutForm: typeof import('@nutui/nutui-taro')['Form']
+    NutFormItem: typeof import('@nutui/nutui-taro')['FormItem']
+    NutInput: typeof import('@nutui/nutui-taro')['Input']
+    NutPicker: typeof import('@nutui/nutui-taro')['Picker']
     NutPopup: typeof import('@nutui/nutui-taro')['Popup']
+    NutProgress: typeof import('@nutui/nutui-taro')['Progress']
+    NutRadio: typeof import('@nutui/nutui-taro')['Radio']
+    NutRadioGroup: typeof import('@nutui/nutui-taro')['RadioGroup']
+    NutSearchbar: typeof import('@nutui/nutui-taro')['Searchbar']
+    NutSpace: typeof import('@nutui/nutui-taro')['Space']
     NutSwiper: typeof import('@nutui/nutui-taro')['Swiper']
     NutSwiperItem: typeof import('@nutui/nutui-taro')['SwiperItem']
     NutTabPane: typeof import('@nutui/nutui-taro')['TabPane']
     NutTabs: typeof import('@nutui/nutui-taro')['Tabs']
+    Search: typeof import('./src/components/search/search.vue')['default']
+    Tabbar: typeof import('./src/components/tab-bar/tabbar.vue')['default']
   }
 }

@@ -1,5 +1,6 @@
 import ComponentsPlugin from 'unplugin-vue-components/webpack'
 import NutUIResolver from '@nutui/auto-import-resolver'
+const path = require('path');
 const config = {
   projectName: 'APP',
   date: '2024-2-22',
@@ -15,7 +16,8 @@ const config = {
   deviceRatio: {
     640: 2.34 / 2,
     750: 1,
-    828: 1.81 / 2
+    828: 1.81 / 2,
+    375: 2,
   },
   sourceRoot: 'src',
   outputRoot: 'dist',
@@ -30,7 +32,7 @@ const config = {
   framework: 'vue3',
   compiler: 'webpack5',
   cache: {
-    enable: true,
+    enable: false,
   },
   mini: {
     webpackChain (chain) {
@@ -57,7 +59,7 @@ const config = {
       pxtransform: {
         enable: true,
         config: {
-
+          // selectorBlackList: [/nut-/]
         }
       },
       url: {

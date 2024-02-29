@@ -1,8 +1,8 @@
 {
   "miniprogramRoot": "./",
-  "projectname": "多端APP",
+  "projectname": "APP",
   "description": "",
-  "appid": "touristappid",
+  "appid": "tt354e43f3aa7fdeec01",
   "setting": {
     "urlCheck": true,
     "es6": false,

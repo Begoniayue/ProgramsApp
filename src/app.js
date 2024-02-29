@@ -1,8 +1,5 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import 'taro-ui/dist/style/index.scss'
-/*全局样式文件 目前用不到*/
-import '@nutui/nutui-taro/dist/style.css'
 
 
 const App = createApp({
