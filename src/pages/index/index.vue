@@ -4,21 +4,14 @@
       :init-page="2"
       :auto-play="3000"
       pagination-visible
-      pagination-color="#426543"
-      pagination-unselected-color="#808080"
+      pagination-color="#6C6BFC"
+      pagination-unselected-color="#F6F6F6"
+      class="home-swiper"
     >
-      <nut-swiper-item v-for="(item, index) in bannerList" :key="index" style="height: 150px">
-          <image :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
+      <nut-swiper-item v-for="(item, index) in sliderList" :key="index" style="height: 180px">
+        <img :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
       </nut-swiper-item>
     </nut-swiper>
-<!--搜索-->
-<!--    <view class="home-search-wrap">-->
-<!--      <input type="text" placeholder="请输入搜索内容"  /></view>-->
-<!--    <nut-searchbar v-model="searchValue" @search="se
-arch" class="home-search"></nut-searchbar>-->
-<!--    <nut-input v-model="searchValue" placeholder="Placeholder" />-->
-<!--搜索弹出层-->
-
     <!--主体内容-->
     <view class="home-content">
       <view class="home-search-wrap">
@@ -127,7 +120,7 @@ import './index.scss'
 import {onMounted, ref} from 'vue';
 /*阿里矢量图标库*/
 import { IconFont } from '@nutui/icons-vue-taro';
-let bannerList = ref([]);
+const sliderList = ref([]);
 /*轮播*/
 const list = ref([
   'https://storage.360buyimg.com/jdc-article/NutUItaro34.jpg',
@@ -168,8 +161,8 @@ const getDate = () =>{
       'content-type': 'application/json'
     },
     success: function (res) {
-      bannerList = res.data;
-      console.log(res.data)
+      console.log(res.data,'1234')
+      sliderList.value = res.data.data;
     }
   })
 }

@@ -26,7 +26,10 @@
   }
 }
 .home-content{
-  padding: 10px;
+  border-radius: 15px;
+  position: relative;
+  margin-top: -10px;
+  background: #fff;
 }
 .home-tabs .nut-tabs__list{
   background: #ffffff;
@@ -84,4 +87,7 @@
     }
   }
 
+}
+.home-swiper{
+  position: relative;
 }
