@@ -7,8 +7,8 @@
       pagination-color="#426543"
       pagination-unselected-color="#808080"
     >
-      <nut-swiper-item v-for="(item, index) in list" :key="index" style="height: 150px">
-        <img :src="item" alt="" style="height: 100%; width: 100%" draggable="false" />
+      <nut-swiper-item v-for="(item, index) in bannerList" :key="index" style="height: 150px">
+          <image :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
       </nut-swiper-item>
     </nut-swiper>
 <!--搜索-->
@@ -26,14 +26,13 @@ arch" class="home-search"></nut-searchbar>-->
           <template #rightout>  <IconFont name="search"></IconFont> </template>
           <template #rightin>
             <view class="icon" @click="showRight = true">
-              <image
+              <images
                 style="width: 24px;height: 24px;background: #fff;"
                 src="../../../images/icon.png"
               />
             </view>
           </template>
         </nut-searchbar>
-        <input v-model="searchValue" placeholder="请输入搜索内容" class="home-search-input" :bindconfirm="searchInit"/>
       </view>
       <nut-popup v-model:visible="showRight" position="right" :style="{ width: '40%', height: '100%' }"></nut-popup>
       <view class="back-top">
@@ -121,13 +120,14 @@ arch" class="home-search"></nut-searchbar>-->
 </template>
 
 <script setup>
-import { Backtop } from '@nutui/nutui-taro';
+import Taro from "@tarojs/taro";
 /*获取环境变量*/
 import { useAppEnvStore } from '../../stores/appEnvStore'
 import './index.scss'
 import {onMounted, ref} from 'vue';
 /*阿里矢量图标库*/
 import { IconFont } from '@nutui/icons-vue-taro';
+let bannerList = ref([]);
 /*轮播*/
 const list = ref([
   'https://storage.360buyimg.com/jdc-article/NutUItaro34.jpg',
@@ -150,12 +150,40 @@ const useAppEnv = useAppEnvStore();
 
 onMounted(() => {
   useAppEnv.init()
+  getDate()
   console.log(useAppEnv.currentEnv)
 })
 /*getUrlLink*/
 const getUrlLink = () => {
   Taro.navigateTo({
     url: '/pages/Synthesis/index',
+  })
+};
+/* 接口请求*/
+const getDate = () =>{
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/banners_new',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    success: function (res) {
+      bannerList = res.data;
+      console.log(res.data)
+    }
+  })
+}
+/*list*/
+const listInit = () => {
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/index',
+    method: 'POST',
+    header: {
+      'content-type': 'application/json'
+    },
+    success: function (res) {
+      console.log(res.data,'13234')
+    }
   })
 };
 </script>

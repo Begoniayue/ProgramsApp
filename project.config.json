@@ -1,11 +1,12 @@
 {
   "miniprogramRoot": "dist/",
   "description": "",
+  "appid": "tte0e7965a7fd672e101",
   "setting": {
     "urlCheck": true,
     "es6": false,
     "enhance": false,
-    "compileHotReLoad": true,
+    "compileHotReLoad": false,
     "postcss": false,
     "minified": false,
     "babelSetting": {
@@ -31,5 +32,5 @@
     "ignore": [],
     "include": []
   },
-  "projectname": "APP"
+  "projectname": "panorama"
 }

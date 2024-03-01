@@ -188,3 +188,46 @@
     color: #999999;
   }
 }
+.popupShare{
+  width: 100%;
+  .nut-popup{
+    padding: 20px;
+  }
+  .share-title{
+    font-weight: 400;
+    font-size: 24px;
+    color: #999999;
+  }
+  .share-wrap{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .share-item{
+    .share-content{
+      border: none;
+      background-color: transparent;
+      box-shadow: none;
+      margin: 0;
+      outline: none;
+      padding: 0;
+      line-height: 20px;
+    }
+  }
+}
+.share-content,
+.share-content:focus,
+.share-content:hover {
+  border: none !important;
+  background-color: transparent !important;
+}
+.share-icon{
+  width: 121px;
+  height: 121px;
+}
+.share-type{
+  font-weight: 400;
+  font-size: 24px;
+  color: #333333;
+}
+button::after{ border: none; }

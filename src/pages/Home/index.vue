@@ -60,7 +60,8 @@
               <view class="right-container">
                 <view class="info-line">
                   <view class="work-title">作品名称</view>
-                  <button class="share-text" open-type="share" @click="shareLink">分享</button>
+                  <view class="share-text" @click="shareLink">分享</view>
+<!--                  <button class="share-text" open-type="share" @click="shareLink">分享</button>-->
                 </view>
                 <view class="info-line">
                   <text class="date">2021-09-27 13:12</text>
@@ -84,12 +85,62 @@
         <nut-tab-pane title="素材库" pane-key="4"> 素材库 </nut-tab-pane>
         <nut-tab-pane title="素材库" pane-key="5"> 回收站 </nut-tab-pane>
       </nut-tabs>
+<!--气泡弹出层-->
+      <nut-popup v-model:visible="showShare" position="bottom" :style="{ height: '40%' }" class="popupShare">
+        <view class="share-title">直接分享</view>
+        <view class="share-wrap">
+          <view class="share-item">
+            <button class="share-content" open-type="share" @click="shareLink">
+              <image src="../../../images/chat.png" mode="aspectFit" class="share-icon"></image>
+              <view class="share-type" v-if="String(useAppEnv.currentEnv) === 'WEAPP'">
+                微信好友
+              </view>
+              <view class="share-type" v-else>选择分享方式</view>
+            </button>
+          </view>
+          <view class="share-item">
+            <view>
+              <image src="../../../images/link.png" mode="aspectFit" class="share-icon"></image>
+            </view>
+            <view class="share-type" open-type="share" @click="shareLink">作品链接</view>
+          </view>
+          <view class="share-item">
+            <view>
+              <image src="../../../images/code.png" mode="aspectFit" class="share-icon"></image>
+            </view>
+            <view class="share-type" open-type="share" @click="shareLink">作品二维码</view>
+          </view>
+        </view>
+<!--  vip      -->
+        <view class="share-title">你还可以选择（部分功能vip）</view>
+        <view class="share-wrap">
+          <view class="share-item">
+            <view>
+              <image src="../../../images/cardgreen.png" mode="aspectFit" class="share-icon"></image>
+            </view>
+            <view class="share-type" open-type="share" @click="shareLink">临时链接</view>
+          </view>
+          <view class="share-item">
+            <view>
+              <image src="../../../images/card.png" mode="aspectFit" class="share-icon"></image>
+            </view>
+            <view class="share-type" open-type="share" @click="shareLink">作品加密</view>
+          </view>
+          <view class="share-item">
+            <view>
+              <image src="../../../images/cardblue.png" mode="aspectFit" class="share-icon"></image>
+            </view>
+            <view class="share-type" open-type="share" @click="shareLink">生成卡片</view>
+          </view>
+        </view>
+      </nut-popup>
     </view>
   </view>
 </template>
 <script setup>
+import { useAppEnvStore } from '../../stores/appEnvStore'
 import { Taro } from '@tarojs/taro';
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 import './index.scss'
 import { useShareAppMessage } from '@tarojs/taro'
 import {IconFont} from "@nutui/icons-vue-taro";
@@ -99,32 +150,37 @@ const vip = ref(false)
 const tabValue = ref('1');
 import { Search2 } from '@nutui/icons-vue-taro';
 const val = ref('');
+let showShare = ref(false);
 const url = ref('https://img12.360buyimg.com/imagetools/jfs/t1/196430/38/8105/14329/60c806a4Ed506298a/e6de9fb7b8490f38.png');
+const useAppEnv = useAppEnvStore();
+
 const openTips = () => {
   console.log('showTips')
   showTips.value = true;
 };
 const shareLink = () => {
   console.log('shareLink')
-  useShareAppMessage((res) => {
-    if (res.from === 'button') {
-      // 来自页面内转发按钮
-      return {
-        title: '我的分享标题',
-        path: '/pages/index/index',
-        imageUrl: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-        success() {
-          // 分享成功后的回调处理
-        },
-        fail(err) {
-          // 分享失败后的回调处理
-        },
-      };
-    }
-    return {
-      title: '自定义转发标题',
-      path: '/page/user?id=123',
-    }
-  })
+  showShare.value = true;
+
 };
+useShareAppMessage((res) => {
+  if (res.from === 'button') {
+    // 来自页面内转发按钮
+    return {
+      title: '我的分享标题',
+      path: '/pages/index/index',
+      imageUrl: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
+      success() {
+        // 分享成功后的回调处理
+      },
+      fail(err) {
+        // 分享失败后的回调处理
+      },
+    };
+  }
+  return {
+    title: '自定义转发标题',
+    path: '/page/user?id=123',
+  }
+})
 </script>
