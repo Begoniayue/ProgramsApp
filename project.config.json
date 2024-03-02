@@ -1,14 +1,14 @@
 {
   "miniprogramRoot": "dist/",
   "description": "",
-  "appid": "tte0e7965a7fd672e101",
+  "appid": "wx27a6036564d9f270",
   "setting": {
     "urlCheck": true,
-    "es6": false,
-    "enhance": false,
+    "es6": true,
+    "enhance": true,
     "compileHotReLoad": false,
-    "postcss": false,
-    "minified": false,
+    "postcss": true,
+    "minified": true,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],

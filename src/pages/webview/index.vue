@@ -1,5 +1,5 @@
 <template>
-  <web-view src='https://mp.weixin.qq.com/' @message="handleMessage" />
+  <web-view/>
 </template>
 <script>
 

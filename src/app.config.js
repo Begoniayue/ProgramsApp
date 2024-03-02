@@ -1,9 +1,10 @@
 export default {
   pages: [
-    'pages/index/index',
+    'pages/Index/index',
     'pages/Home/index',
     'pages/Synthesis/index',
     'pages/webview/index',
+    'pages/UserSetting/index',
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -13,7 +14,7 @@ export default {
   },
   tabBar: {
     list: [{
-      pagePath: 'pages/index/index',
+      pagePath: 'pages/Index/index',
       text: '首页',
       iconPath:"pages/images/shouye.png",
       selectedIconPath:"pages/images/shouyes.png",
@@ -25,7 +26,7 @@ export default {
       selectedIconPath:"pages/images/hechengs.png",
     },
       {
-      pagePath: 'pages/Home/index',
+      pagePath: 'pages/UserSetting/index',
       text: '我的',
       iconPath:"pages/images/my.png",
       selectedIconPath:"pages/images/mys.png",
