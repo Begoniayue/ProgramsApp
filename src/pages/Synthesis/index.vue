@@ -227,4 +227,59 @@ const openToast = (type, msg, cover = false) => {
   })
 };
 const onClosed = () => console.log('closed');
+
+/*合成*/
+import { ref, onMounted } from 'vue';
+import Taro from '@tarojs/taro';
+
+const statusCode = ref(0);
+
+// 在组件挂载后开始刷新接口
+onMounted(() => {
+  refreshApi();
+});
+
+const refreshApi = () => {
+  // 发起网络请求
+  requestApi();
+};
+
+const requestApi = () => {
+  const apiUrl = 'https://your-api-endpoint.com/data';
+
+  Taro.request({
+    url: apiUrl,
+    method: 'GET',
+    success: (res) => {
+      const newStatusCode = res.statusCode;
+
+      // 判断状态码
+      if (newStatusCode === 200) {
+        console.log('接口返回状态码 200，操作完成');
+      } else if (newStatusCode === -200) {
+        console.log('接口返回状态码 -200，继续刷新接口');
+        // 在这里可以添加一些其他逻辑，例如处理数据等
+
+        // 等待一段时间后继续刷新接口
+        setTimeout(() => {
+          requestApi();
+        }, 2000); // 间隔 2000 毫秒（2 秒）
+      } else {
+        console.error('接口返回状态码异常:', newStatusCode);
+
+        // 在第二次及以后的 -200 状态码时报错
+        if (statusCode.value === -200) {
+          console.error('第二次及以后的 -200 状态码，报错');
+        }
+
+        // 更新状态码
+        statusCode.value = newStatusCode;
+      }
+    },
+    fail: (error) => {
+      console.error('调用接口失败:', error);
+      // 在这里处理请求失败的情况
+    },
+  });
+};
 </script>
