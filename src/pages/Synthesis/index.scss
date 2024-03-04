@@ -1,6 +1,10 @@
 .upload-form{
   padding: 10px;
 }
+.nut-cell-group__wrap{
+  box-shadow: none;
+  background: #ffffff;
+}
 .work-name .nut-input-box input{
   width: 540px;
   height: 90px;
@@ -38,20 +42,20 @@
   flex-wrap: wrap;
 }
 .upload-form-box{
-  background: #FFFFFF;
-  border-radius: 8px;
-  align-items: center;
 }
 .upload-form-box .nut-form-item{
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
   padding-top: 30px;
+  .nut-form-item__label{
+    font-weight: bold;
+  }
 }
 .work-type{
-  height: 80rpx;
-  line-height: 80rpx;
-  padding-left: 20px;
-  border: 1px solid #EAEAEA;
+  color: #696969;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 .work-pop .nut-popup{
   padding: 10px;
@@ -62,8 +66,8 @@
 .publish-box{
   display: flex;
   padding-left: 20px;
-  .nut-radio{
-    width: 250px;
+  .nut-checkbox{
+    width: 215px;
     height: 70px;
     text-align: center;
     border-radius: 8px;
@@ -72,8 +76,8 @@
     background: #F8F8F8;
     margin-right: 20px;
   }
-  .nut-radio__button--active{
-    width: 250px;
+  .nut-checkbox__button--active{
+    width: 215px;
     height: 70px;
     border-radius: 8px;
     text-align: center;
@@ -82,6 +86,10 @@
     justify-content: center;
     background: #ffffff;
     border: 1px solid #6C6BFC;
+    background-image: url("../../../images/gou.png");
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: 40px;
     &::after{
       background: none;
     }
@@ -93,7 +101,7 @@
   image{
     width: 198px;
     height: 198px;
-    margin-left: 20px;
+    margin-left: 10px;
     margin-top: 10px;
   }
   span {
@@ -114,11 +122,13 @@
     color: #F8F8F8;
     cursor: pointer;
     z-index: 1;
-    width: 48px;
-    height: 48px;
+    width: 35px;
+    height: 35px;
     background: #000000;
     border-radius: 0 8px 0 8px;
     opacity: 0.5;
+    line-height: 30px;
+    text-align: center;
   }
 }
 .upload-box{
@@ -130,11 +140,10 @@
   background: #FFFFFF;
   border-radius: 8px;
   border: 1px solid #6C6BFC;
+  text-align: center;
   image{
     width: 120px;
     height: 120px;
-    margin-top: 10px;
-    margin-left: 30px;
   }
 }
 .item-img{
@@ -152,7 +161,7 @@
   font-weight: 500;
   font-size: 24px;
   color: #666666;
-  line-height: 40px;
+  line-height: 48px;
   margin-top: 10px;
 }
 .upload-tip-title{
@@ -168,4 +177,26 @@
   text-align: center;
   color: #F8F8F8;
   justify-content: center;
+}
+.form-input {
+  .nut-input-box input{
+    text-align: right!important;
+  }
+}
+.work-icon{
+  width: 40px;
+  height: 40px;
+}
+.publish-wrap{
+  .nut-form-item__label{
+     padding-left: 20px;
+   }
+}
+.upload-btn{
+  display: flex;
+  justify-content: center;
+}
+.upload-tip{
+  padding: 20px;
+  line-height: 45px;
 }

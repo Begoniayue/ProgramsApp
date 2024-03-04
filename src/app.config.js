@@ -4,7 +4,7 @@ export default {
     'pages/Home/index',
     'pages/Synthesis/index',
     'pages/webview/index',
-    'pages/UserSetting/index',
+    'pages/UserSetting/index', // 设置
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -26,7 +26,7 @@ export default {
       selectedIconPath:"pages/images/hechengs.png",
     },
       {
-      pagePath: 'pages/UserSetting/index',
+      pagePath: 'pages/Home/index',
       text: '我的',
       iconPath:"pages/images/my.png",
       selectedIconPath:"pages/images/mys.png",

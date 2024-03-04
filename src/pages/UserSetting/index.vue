@@ -37,11 +37,11 @@ const formData = ref({
   music:'',
 })
 // 在 onLoad 生命周期中监听事件
-Taro.onLoad(() => {
-  // 通过 Taro 对象的事件监听方式监听事件
-  Taro.eventCenter.on('updateFormData', (resultData) => {
-    // 更新表单数据
-    Object.assign(formData, resultData);
-  });
-});
+// Taro.onLoad(() => {
+//   // 通过 Taro 对象的事件监听方式监听事件
+//   Taro.eventCenter.on('updateFormData', (resultData) => {
+//     // 更新表单数据
+//     Object.assign(formData, resultData);
+//   });
+// });
 </script>

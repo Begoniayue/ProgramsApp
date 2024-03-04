@@ -8,14 +8,14 @@
       pagination-unselected-color="#F6F6F6"
       class="home-swiper"
     >
-      <nut-swiper-item v-for="(item, index) in sliderList" :key="Index" style="height: 180px">
-        <img :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
+      <nut-swiper-item v-for="(item, index) in sliderList" :key="index" style="height: 180px">
+         <image :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
       </nut-swiper-item>
     </nut-swiper>
     <!--主体内容-->
     <view class="home-content">
       <view class="home-search-wrap">
-        <nut-searchbar v-model="searchValue">
+        <nut-searchbar v-model="searchValue" placeholder="搜索全景关键词">
           <template #rightout>
             <view class="icon" @click="showRight = true">
               <image
@@ -27,35 +27,46 @@
           <template #rightin>  <IconFont name="search"></IconFont> </template>
         </nut-searchbar>
       </view>
-      <nut-popup v-model:visible="showRight" position="right" :style="{ width: '40%', height: '100%' }"></nut-popup>
+      <nut-popup v-model:visible="showRight" position="right" :style="{ width: '75%', height: '100%' }">
+        <view class="check-wrap">
+          <view class="check-title">空间分类 </view>
+            <nut-radio-group v-model="bigcate" class="home-radio">
+              <nut-radio :label="item.id" shape="button" v-for="item in bigcateList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
+            </nut-radio-group>
+          <view class="check-title">风格分类 </view>
+          <nut-radio-group v-model="smallcate" class="home-radio">
+            <nut-radio :label="item.id" shape="button" v-for="item in smallcateList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
+          </nut-radio-group>
+        </view>
+        <view class="check-btn">
+          <nut-button type="primary" @click="Reset" class="reset">重置</nut-button>
+          <nut-button type="primary" @click="Sure" class="sure">确定</nut-button>
+        </view>
+      </nut-popup>
       <view class="scroll-container" @scrolltolower="onReachBottom">
         <nut-backtop height="calc(100vh - 10px)">
           <template #content>
             <view>
-              <nut-tabs v-model="tabValue" class="home-tabs">
-                <nut-tab-pane title="VR效果图" pane-key="1" class="list_box">
-                  <view class="item">
-                    <view class="list">
+              <nut-tabs v-model="tabValue" class="home-tabs" @click="tabClick">
+                <nut-tab-pane :title="item.name" :pane-key="item.id" class="list_box" v-for="item in typeList" :key="item.id">
+                  <view class="item" v-for="item in dataList" :key="item.id">
+                    <view class="list" >
                       <view class="list_pic" @click="getUrlLink">
-                        <view class="pic"><image src="../../../images/test.png"/></view>
+                        <view class="pic"><image :src="item.preview_url"/></view>
                       </view>
-                      <view class="item_bt">人体工学沙发</view>
+                      <view class="item_bt">{{ item.name }}</view>
                       <view class="item-description">
                         <view class="item-description-text">
-                          艺境高端效果图表现艺境高端效果图表
+                          {{ item.username }}
                         </view>
                         <view class="item-thumb">
                           <image src="../../../images/tuijian.png" class="item-count-icon"/>
-                          <view class="item-count">45689</view>
+                          <view class="item-count">{{ item.like_num }}</view>
                         </view>
                       </view>
                     </view>
                   </view>
-                  <div v-if="loading" class="loading">加载中...</div>
                 </nut-tab-pane>
-                <nut-tab-pane title="案例汇报" pane-key="2"> 案例汇报 </nut-tab-pane>
-                <nut-tab-pane title="风景航拍" pane-key="3"> 风景航拍 </nut-tab-pane>
-                <nut-tab-pane title="项目水电" pane-key="4"> 项目水电 </nut-tab-pane>
               </nut-tabs>
             </view>
           </template>
@@ -79,6 +90,12 @@ const sliderList = ref([]);
 const dataList = ref([]);
 const loading = ref(false);
 let page = ref(1);
+let type = ref(6);
+let bigcate =  ref(0)
+let smallcate =  ref(0)
+let bigcateList =  ref([])
+let smallcateList =  ref([])
+let typeList =  ref([])
 /*搜索*/
 import { Search2 } from '@nutui/icons-vue-taro';
 const searchValue = ref('');
@@ -89,13 +106,13 @@ const searchInit = (text) => {
 const showRight = ref(false);
 
 /**/
-const tabValue = ref('1');
+const tabValue = ref('6');
 const useAppEnv = useAppEnvStore();
 
 onMounted(() => {
   useAppEnv.init()
-  // getDate()
-  // loadMoreData()
+  getDate()
+  siftDate()
 })
 /*getUrlLink*/
 const getUrlLink = () => {
@@ -105,28 +122,41 @@ const getUrlLink = () => {
 };
 /* 接口请求*/
 const getDate = () =>{
-  getSlider()
-    .then((res) => {
-      sliderList.value = res.data.data;
-      console.log(res);
-    })
-    .catch((error) => {
-      // 处理请求错误
-      console.error(error);
-    });
-}
-// 加载更多数据
-const listInit = async (pageNumber) => {
-  // 实际的 API 请求逻辑
   return Taro.request({
-    url: 'https://vr.justeasy.cn/xcx/pano/index',
-    method: 'POST',
+    url: 'https://vr.justeasy.cn/xcx/pano/banners_new',
+    method: 'GET',
     header: {
-      'content-type': 'application/json'
+      "content-type":"application/x-www-form-urlencoded"
     }
   }).then((res) => {
     if (res.statusCode === 200) {
-      return res.data;
+      sliderList.value = res.data.data;
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  });
+}
+// 加载更多数据
+const listInit = async (pageNumber) => {
+  return Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/index',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      page: page.value,
+      type:type.value,
+      smallcate:smallcate.value,
+      bigcate:bigcate.value,
+      keywords:searchValue.value,
+      uid:'39',
+    }
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      dataList.value = res.data.data.list;
+      console.log(res.data.data.list)
+      console.log(dataList)
     } else {
       throw new Error('Failed to fetch data');
     }
@@ -135,11 +165,10 @@ const listInit = async (pageNumber) => {
 
 const loadMoreData = async () => {
   if (loading.value) return;
-
   try {
     loading.value = true;
     const data = await listInit(page.value);
-    dataList.value = [...dataList.value, ...data];
+    // dataList.value = [...dataList.value, ...data];
     page.value++;
   } catch (error) {
     console.error(error);
@@ -147,7 +176,24 @@ const loadMoreData = async () => {
     loading.value = false;
   }
 };
-
+/*筛选*/
+const siftDate = () =>{
+  return Taro.request({
+    url: 'https://vr.justeasy.cn/Xcx/pano/get_cate',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    }
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      bigcateList.value = res.data.data.bigcate;
+      smallcateList.value = res.data.data.smallcate;
+      typeList.value = res.data.data.type;
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  });
+}
 // 在组件挂载后首次加载或监听滚动到底部事件来调用 loadMoreData 方法
 onMounted(() => {
   loadMoreData();
@@ -156,6 +202,16 @@ const refreshData = async () => {
   // 重新初始化数据，这里简单起见，你需要替换为真实的刷新逻辑
   page = 1;
   await listInit(1)
+};
+const Reset = () => {
+  bigcate.value = 0;
+  smallcate.value = 0;
+};
+const Sure = () => {
+  console.log('确定')
+  showRight.value = false;
+  page.value = 1
+  listInit()
 };
 const onReachBottom = () => {
   console.log('触底啦！加载更多数据');
@@ -172,5 +228,9 @@ usePullDownRefresh(() => {
   console.log('onPullDownRefresh')
   // refreshData()
 })
-
+const tabClick = (e) => {
+  type.value = Number(e.paneKey)
+  page.value = 1
+  listInit()
+}
 </script>

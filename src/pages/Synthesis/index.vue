@@ -14,47 +14,48 @@
       ]
     }"
     >
-      <nut-form-item label="作品名称：" prop="name">
-        <nut-input
-          v-model="formData.name"
-          placeholder="请输入作品名称"
-          type="text"
-          class="work-name"
-          @blur="customBlurValidate('name')"
-        />
+      <nut-form-item label="作品名称" required>
+        <nut-input v-model="formData.title" placeholder="请输入作品名称" type="text"  @blur="customBlurValidate('name')" class="form-input"/>
       </nut-form-item>
       <nut-form-item
         label="作品分类："
         prop="age"
         required
+        v-model="formData.classify"
         :rules="[
         { required: true, message: '请选择作品分类' },
       ]"
       >
-        <view class="work-type" @click="workShow = true">
+        <view class="work-type" v-if="checkBigcate && checksmallcate">
+          {{checkBigcate}}-{{checksmallcate}}
+        </view>
+        <view v-else class="work-type" @click="workShow = true">
           请选择作品分类
+          <image src="../../../images/arrow.png" class="work-icon"/>
         </view>
         <nut-popup v-model:visible="workShow" position="bottom" class="work-pop">
+<!--          <nut-picker v-model="value" :columns="text" title="请选择时间" @confirm="confirm" />-->
           <nut-picker v-model="workchange" :columns="columns" @confirm="confirm" @cancel="workShow = false" />
         </nut-popup>
       </nut-form-item>
       <nut-form-item
         label="发布展示："
         prop="publish"
+        class="publish-wrap"
       >
-        <nut-radio-group v-model="formData.publish" class="publish-box">
-          <nut-radio label="1" shape="button">全景首页</nut-radio>
-          <nut-radio label="2" shape="button">微官网(VIP)</nut-radio>
-        </nut-radio-group>
+        <view class="publish-box">
+          <nut-checkbox v-model="wantshow" shape="button"> 全景首页 </nut-checkbox>
+          <nut-checkbox v-model="myshow" shape="button"> 微官网(VIP) </nut-checkbox>
+        </view>
       </nut-form-item>
       <nut-form-item
         label="水印展示："
         prop="water"
       >
-        <nut-radio-group v-model="formData.waterFlag" class="publish-box">
-          <nut-radio label="1" shape="button">开启防盗保护</nut-radio>
-          <nut-radio label="2" shape="button">去除作品水印</nut-radio>
-        </nut-radio-group>
+        <view class="publish-box">
+          <nut-checkbox v-model="water_text" shape="button"> 开启防盗保护 </nut-checkbox>
+          <nut-checkbox v-model="water_text_open" shape="button"> 去除作品水印</nut-checkbox>
+        </view>
       </nut-form-item>
       <nut-form-item label="上传全景：" class="upload-box">
         <view class="upload-img" @click="uploadImage">
@@ -69,12 +70,7 @@
             <i class="delete-icon" v-if="item.url" title="删除图片" @click.stop="deleteImage(index)">&times;</i>
           </view>
         </view>
-
       </nut-form-item>
-      <nut-space style="margin: 10px">
-        <nut-button @click="submit" class="submit-btn">开始合成</nut-button>
-      </nut-space>
-      <nut-cell title="失败提示" is-link @click="openToast('fail', '失败提示')"></nut-cell>
     </nut-form>
     <view class="upload-tip">
       <view class="upload-tip-title">
@@ -87,38 +83,32 @@
         <view>4、作品信息修改等请到作品管理页面编辑。</view>
       </view>
     </view>
+    <view class="upload-btn">
+      <nut-button @click="submit" class="submit-btn">开始合成</nut-button>
+    </view>
   </view>
 </template>
 <script setup>
 import Taro from "@tarojs/taro";
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import './index.scss'
 import {chooseImage,uploadFile} from "@tarojs/taro";
+let bigcateList =  ref([])
+let smallcateList =  ref([])
+const checkBigcate = ref('')
+const checksmallcate = ref('')
+const wantshow = ref(false)
+const myshow = ref(false)
+const water_text = ref(false)
+const water_text_open = ref(false)
 const formData = ref({
-  name: '',
-  age: '',
-  waterFlag: '',
-  publish: '',
-  defaultFileList: [
-    {
-      name: '文件1.png',
-      url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-      status: 'success',
-      message: '上传成功',
-      type: 'image'
-    },
-    {
-      name: '文件2.png',
-      url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-      status: 'uploading',
-      message: '上传中...',
-      type: 'image'
-    }
-  ]
+  title: '',
+  classify: '',
 });
+const uploadData = ref({})
 const formRef = ref(null);
 const workShow = ref(false);
-const workchange = ref('');
+const workchange = ref([0, 0]);
 const selectedImages = ref([
   {
     url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
@@ -137,7 +127,10 @@ const selectedImages = ref([
   }
 ]);
 const confirm = ({ selectedValue, selectedOptions }) => {
-  console.log(selectedValue[0], selectedOptions[0]);
+  console.log(workchange,'workchange')
+  console.log(selectedValue[0], selectedOptions[0],selectedValue[1],selectedOptions[1]);
+  checkBigcate.value = selectedOptions[0].text
+  checksmallcate.value = selectedOptions[1].text
   workShow.value = false;
 };
 
@@ -145,6 +138,34 @@ const submit = () => {
   formRef.value?.validate().then(({ valid, errors }) => {
     if (valid) {
       console.log('success:', formData.value);
+      Taro.request({
+        url: 'https://vr.justeasy.cn/Xcx/pano/get_cate',
+        method: 'POST',
+        header: {
+          'content-type': 'application/json'
+        },
+        data: {
+          uid:39,
+          bcate: checkBigcate.value,
+          scate: checksmallcate.value,
+          title: formData.value.title,
+          wantshow: wantshow.value ? 1 : 0,
+          myshow: myshow.value ? 1 : 0,
+          water_text: water_text.value ? '开启防盗保护' : null,
+          water_text_open: water_text_open.value ? 1 : 0,
+          pic: '', // 数组
+          sceneids:''
+        }
+      }).then((res) => {
+        if (res.statusCode === 200) {
+          uploadData.value = res.data.data;
+          if (uploadData.value) {
+            requestApi();
+          }
+        } else {
+          throw new Error('Failed to fetch data');
+        }
+      });
     } else {
       console.warn('error:', errors);
     }
@@ -160,13 +181,7 @@ const customBlurValidate = (prop) => {
     }
   });
 };
-// 函数校验
-const columns = ref([
-  { text: '普通住宅', value: '普通住宅' },
-  { text: '别墅豪宅', value: '别墅豪宅' },
-  { text: '现代', value: '现代' },
-  { text: '法式', value: '现代' },
-]);
+const columns = ref([]);
 const nameLengthValidator = (val) => {
   if (val.length > 2) {
     return Promise.resolve();
@@ -174,28 +189,45 @@ const nameLengthValidator = (val) => {
     return Promise.reject('名称两个字以上');
   }
 };
-// Promise 异步校验
-const asyncValidator = (val) => {
-  const telReg = /^400(-?)[0-9]{7}$|^1\d{10}$|^0[0-9]{2,3}-[0-9]{7,8}$/;
-  return new Promise((resolve, reject) => {
-    console.log('模拟异步验证中...');
-    setTimeout(() => {
-      if (!val) {
-        reject('请输入联系电话');
-      } else if (!telReg.test(val)) {
-        reject('联系电话格式不正确');
-      } else {
-        resolve('');
-      }
-    }, 1000);
-  });
-};
 /*上传*/
 const uploadImage = async () => {
-  const { tempFiles } = await Taro.chooseImage({
-    count: 1,
-  });
-  selectedImages.value.push(tempFiles[0]);
+  Taro.chooseImage({
+    count: 1, // 默认9
+    sizeType: ['original', 'compressed'],
+    sourceType: ['album', 'camera'],
+    success: function (res) {
+      // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
+      const tempFilePaths = res.tempFilePaths;
+      Taro.uploadFile({
+        url: ' https://vr.justeasy.cn/User/Upload/image/pano/1.php', // 上传的地址
+        filePath: '',
+        name: 'fileFieldName', // 文件对应的 key，服务器端通过这个 key 可以获取到文件二进制内容
+        formData: { // 其他额外的 form 数据
+          fieldName1: 'stringValue1',
+          fieldName2: 'stringValue2',
+        },
+        header: {
+          'Content-Type': 'multipart/form-data' // 注意：这里的 Content-Type 不需要手动设置，会自动处理
+        },
+        success(res) {
+          const data = res.data
+          Taro.showToast({
+            title: '上传成功',
+            icon: 'success',
+            duration: 2000
+          })
+        },
+        fail(err) {
+          Taro.showToast({
+            title: err,
+            icon: 'error',
+            duration: 2000
+          })
+          console.error('上传失败：', err)
+        }
+      })
+    }
+  })
 };
 const deleteImage = (index) =>{
   selectedImages.value.splice(index, 1);
@@ -226,40 +258,22 @@ const openToast = (type, msg, cover = false) => {
     duration: 2000
   })
 };
-const onClosed = () => console.log('closed');
-
 /*合成*/
-import { ref, onMounted } from 'vue';
-import Taro from '@tarojs/taro';
-
 const statusCode = ref(0);
-
-// 在组件挂载后开始刷新接口
-onMounted(() => {
-  refreshApi();
-});
-
-const refreshApi = () => {
-  // 发起网络请求
-  requestApi();
-};
 
 const requestApi = () => {
   const apiUrl = 'https://your-api-endpoint.com/data';
-
   Taro.request({
     url: apiUrl,
     method: 'GET',
     success: (res) => {
       const newStatusCode = res.statusCode;
-
       // 判断状态码
       if (newStatusCode === 200) {
         console.log('接口返回状态码 200，操作完成');
       } else if (newStatusCode === -200) {
         console.log('接口返回状态码 -200，继续刷新接口');
         // 在这里可以添加一些其他逻辑，例如处理数据等
-
         // 等待一段时间后继续刷新接口
         setTimeout(() => {
           requestApi();
@@ -282,4 +296,31 @@ const requestApi = () => {
     },
   });
 };
+const siftDate = () =>{
+  return Taro.request({
+    url: 'https://vr.justeasy.cn/Xcx/pano/get_cate',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    }
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      const formattedBigCate = res.data.data.bigcate.map(item => ({ value: item.id, text: item.name }));
+      bigcateList.value = formattedBigCate;
+      const formattedSmallCate = res.data.data.smallcate.map(item => ({ value: item.id, text: item.name }));
+      smallcateList.value = formattedSmallCate;
+      const columnsList = [
+        formattedBigCate,
+        formattedSmallCate
+      ]
+      columns.value = columnsList;
+      console.log(columns)
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  });
+}
+onMounted(()=>{
+  siftDate();
+})
 </script>
