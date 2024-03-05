@@ -10,6 +10,7 @@
 .user-info-container {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .avatar-container {
@@ -24,14 +25,14 @@
 }
 
 .info-container {
-  margin-left: 20px;
+  margin-left: 35px;
   flex: 1;
   .user-info{
     display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: center;
-    padding-right: 30px;
+    padding-right: 20px;
     .user-name{
       font-weight: bold;
       font-size: 30px;
@@ -48,12 +49,12 @@
       color: #6c6bfc;
       font-size: 24rpx;
       font-weight: 500;
-      height: 60rpx;
-      width: 200rpx;
+      height: 55rpx;
+      width: 175rpx;
       text-align: center;
-      line-height: 60rpx;
+      line-height: 55rpx;
     }
-    .vip-icon{
+    .vip-icon image{
       width: 40px;
       height: 40px;
     }
@@ -118,15 +119,18 @@
   background: #505B6E;
   border-radius: 25px;
   color: #F8F8F8;
-  font-size: 12px;
+  font-size: 24px;
 }
 .work-count{
   display: flex;
   padding-right: 20px;
+  font-size: 28px;
 }
 .item-list {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
 }
 
 .left-container {
@@ -153,20 +157,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 0;
+  padding: 8px 0 10px 0;
+  font-size: 28px;
   .date{
     font-weight: 500;
     font-size: 24px;
     color: #999999;
+    margin-top: -5px;
   }
 }
 
 .work-title {
-  font-weight: bold;
+  font-size: 24px;
 }
 
 .share-text, .date {
   margin-left: 5px;
+  font-size: 24px;
 }
 
 .icon {
@@ -176,12 +183,24 @@
 }
 .list-box{
   padding: 0px;
+  .nut-tabs__titles-item__line{
+    display: none;
+  }
+  .nut-tabs__list .active .nut-tabs__titles-item__text{
+    color: #AE48F1;
+    font-size: 24px;
+  }
+  .nut-tabs__list .nut-tabs__titles-item__text{
+    font-size: 24px;
+  }
 }
 .share-text{
   color: #6C6BFC;
 }
 .vide-wrap{
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   .text{
     font-weight: 500;
     font-size: 24px;
@@ -197,11 +216,13 @@
     font-weight: 400;
     font-size: 24px;
     color: #999999;
+    padding: 20px 0 0 20px;
   }
   .share-wrap{
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
+    padding: 20px;
   }
   .share-item{
     .share-content{
@@ -211,7 +232,7 @@
       margin: 0;
       outline: none;
       padding: 0;
-      line-height: 20px;
+      line-height: 25px;
     }
   }
 }
@@ -229,5 +250,105 @@
   font-weight: 400;
   font-size: 24px;
   color: #333333;
+}
+.work-text{
+  font-size: 24px;
+}
+.tip-wrap{
+  padding: 40px;
+  line-height: 50px;
+  font-size: 24px;
+}
+.text-bold{
+  font-weight: bold;
+  padding-right: 10px;
+}
+.home-tabs .nut-tabs__list{
+  background: #ffffff;
+  font-size: 24px;
+  padding: 10px 0;
+  .active{
+    font-size: 28px;
+  }
+}
+.nut-tabs .nut-tabs__titles .nut-tabs__titles-item.active .nut-tabs__titles-item__line{
+  background: linear-gradient(270deg, #AE48F1, #6C6BFC);
+  width: 40%;
+  height: 10px;
+  border-radius: 20px;
+}
+.home-search-wrap{
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  .nut-searchbar .nut-searchbar__search-input{
+    width: 85%;
+    height: 80px;
+    color: black;
+    background: #F8F8F8;
+    border-radius: 8px;
+  }
+  .nut-icon-search{
+    color: #666666;
+  }
+  .icon{
+    padding-right: 0;
+    .icon-img{
+      width: 20px;
+    }
+  }
+}
+.right-set{
+  display: flex;
+  justify-content: space-between;
+  width: 23%;
+}
+.book-list{
+  padding: 0 10px;
+}
+.book-item .nut-cell__title{
+  padding: 20px;
+}
+.work-title{
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.book-info{
+  background: #f9f9f9;
+  padding: 15px;
+  color: #8c8c8c;
+  margin-top: 10px;
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+.book-time{
+  font-size: 24px;
+  margin-top: -5px;
+}
+.right-set .nut-icon-del{
+  font-size: 25px;
+  color: #6C6BFC;
+}
+.recyle-wrap{
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 24px;
+  padding-left: 28rpx;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.delete{
+  font-size: 24px;
+  padding-right: 20px;
+  color: red;
+}
+.refer{
+  font-size: 24px;
+  color: green;
+}
+.set-pop{
+  justify-content: center;
 }
 button::after{ border: none; }

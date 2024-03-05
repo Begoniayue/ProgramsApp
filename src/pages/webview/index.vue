@@ -1,6 +1,11 @@
 <template>
-  <web-view/>
+  <web-view :src="url"/>
 </template>
-<script>
-
+<script setup>
+const url = ref('')
+import { onMounted, ref } from 'vue'
+import Taro  from "@tarojs/taro";
+onMounted(() => {
+  url.value = Taro.getCurrentInstance().router.params.url
+})
 </script>

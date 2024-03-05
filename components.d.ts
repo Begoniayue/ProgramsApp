@@ -7,26 +7,13 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    NutBacktop: typeof import('@nutui/nutui-taro')['Backtop']
-    NutButton: typeof import('@nutui/nutui-taro')['Button']
     NutCell: typeof import('@nutui/nutui-taro')['Cell']
-    NutCheckbox: typeof import('@nutui/nutui-taro')['Checkbox']
-    NutForm: typeof import('@nutui/nutui-taro')['Form']
-    NutFormItem: typeof import('@nutui/nutui-taro')['FormItem']
-    NutInput: typeof import('@nutui/nutui-taro')['Input']
-    NutPicker: typeof import('@nutui/nutui-taro')['Picker']
+    NutDialog: typeof import('@nutui/nutui-taro')['Dialog']
     NutPopup: typeof import('@nutui/nutui-taro')['Popup']
-    NutRadio: typeof import('@nutui/nutui-taro')['Radio']
-    NutRadioGroup: typeof import('@nutui/nutui-taro')['RadioGroup']
+    NutProgress: typeof import('@nutui/nutui-taro')['Progress']
     NutSearchbar: typeof import('@nutui/nutui-taro')['Searchbar']
-    NutSpace: typeof import('@nutui/nutui-taro')['Space']
-    NutSwiper: typeof import('@nutui/nutui-taro')['Swiper']
-    NutSwiperItem: typeof import('@nutui/nutui-taro')['SwiperItem']
-    NutSwitch: typeof import('@nutui/nutui-taro')['Switch']
     NutTabPane: typeof import('@nutui/nutui-taro')['TabPane']
     NutTabs: typeof import('@nutui/nutui-taro')['Tabs']
-    NutTextarea: typeof import('@nutui/nutui-taro')['Textarea']
-    NutUploader: typeof import('@nutui/nutui-taro')['Uploader']
     Search: typeof import('./src/components/search/search.vue')['default']
     Tabbar: typeof import('./src/components/tab-bar/tabbar.vue')['default']
   }
