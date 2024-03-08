@@ -4,7 +4,10 @@ export default {
     'pages/Home/index',
     'pages/Synthesis/index',
     'pages/webview/index',
-    'pages/UserSetting/index', // 设置
+    'pages/Work/index',
+    'pages/MoreWork/index',
+    'pages/BGMSet/index',
+    'pages/BatchOperate/index',
   ],
   window: {
     backgroundTextStyle: 'light',

@@ -1,0 +1,48 @@
+.nut-tabs__titles-item__line{
+  display: none;
+}
+.nut-tabs__list .active .nut-tabs__titles-item__text{
+  color: #AE48F1;
+  font-size: 24px;
+}
+.nut-tabs__list .nut-tabs__titles-item__text{
+  font-size: 24px;
+}
+.nut-tab-pane{
+  padding: 20px;
+  line-height: 60px;
+}
+.nut-radio{
+  padding-left: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f6f6f6;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.share-text{
+  color: #6C6BFC;
+  font-size: 28px;
+  float: right;
+  padding-right: 40rpx;
+}
+.nut-tabs__titles-item{
+  margin: 0;
+  padding: 0;
+}
+.nut-tabs__titles{
+  margin: 0;
+  padding: 0;
+}
+.nut-radio__label{
+  font-size: 24px;
+}
+.nut-radio__label{
+  .h5-view{
+    display:flex;
+    align-items: center;
+    .nut-icon{
+      padding-right: 10px;
+    }
+  }
+}

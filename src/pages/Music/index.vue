@@ -3,14 +3,39 @@
     <button @click="playAudio">播放声音</button>
   </view>
   <view>
-    <button @click="navigateToDetail">跳转到详情页</button>
-    <button @click="completeAndBack">完成并返回</button>
+    <button @click="completeAndBack">保存</button>
+  </view>
+  <view class="content">
+    <nut-tabs style="height: 100vh" v-model="state.tab5value" title-scroll direction="vertical">
+      <nut-tab-pane v-for="item in state.list5" :title="'Tab'+ item" :pane-key="item" :key="item"/>
+    </nut-tabs>
+    <scroll-view style="height: 100vh;flex: 1" scroll-y="true">
+      <view class="list-content">
+        <nut-radio-group v-model="BGMSelected">
+          <view v-for="item in state.count" :key="item" class="list-item">
+            <view class="play-or-pause" @click="playId = ''" v-if="playId === item">暂停</view>
+            <view class="play-or-pause" @click="playId = item" v-else>播放</view>
+            {{ item }}
+            <nut-radio :label="item" class="radio-content"/>
+          </view>
+        </nut-radio-group>
+      </view>
+    </scroll-view>
   </view>
 </template>
 
 <script setup>
 import Taro from '@tarojs/taro';
+import {reactive, ref} from 'vue';
 
+const state = reactive({
+  tab5value: '0',
+  list5: Array.from(new Array(2).keys()),
+  count: Array.from(new Array(100).keys())
+
+});
+const BGMSelected = ref('1');
+const playId = ref()
 const playAudio = () => {
   // 创建音频上下文
   const audioContext = Taro.createInnerAudioContext();
@@ -28,30 +53,12 @@ const playAudio = () => {
     // audioContext.stop();
   });
 };
-const navigateToDetail = () => {
-  // 通过 Taro.navigateTo 传递参数
-  Taro.navigateTo({
-    url: '/pages/detail/index?param1=value1&param2=value2',
-  });
-};
 const completeAndBack = () => {
-  // 假设这里有一个操作，你可以在这里获取需要传递的值
-  const resultData = {
-    param1: 'new value1',
-    param2: 'new value2',
-  };
-
   // 返回到原页面，并携带值
   Taro.navigateBack({
     delta: 1,  // 返回到原页面，如果有多级页面，可能需要调整 delta 的值
-    success: function () {
-      const pages = Taro.getCurrentPages();
-      const prevPage = pages[pages.length - 2];  // 获取原页面实例
-
-      // 通过 Taro 对象的事件监听方式将值传递到原页面
-      Taro.eventCenter.trigger('updateFormData', resultData);
-    },
-  });
+  })
+}
 </script>
 
 <style scoped>

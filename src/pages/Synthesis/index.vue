@@ -19,7 +19,7 @@
       </nut-form-item>
       <nut-form-item
         label="作品分类："
-        prop="age"
+        prop="classify"
         required
         v-model="formData.classify"
         :rules="[
@@ -34,7 +34,6 @@
           <image src="../../../images/arrow.png" class="work-icon"/>
         </view>
         <nut-popup v-model:visible="workShow" position="bottom" class="work-pop">
-<!--          <nut-picker v-model="value" :columns="text" title="请选择时间" @confirm="confirm" />-->
           <nut-picker v-model="workchange" :columns="columns" @confirm="confirm" @cancel="workShow = false" />
         </nut-popup>
       </nut-form-item>
@@ -65,7 +64,7 @@
           </view>
           <view class="upload-img-box" v-for="(item, index) in selectedImages" :key="index" @click="chooseImage">
             <!-- 如果有已选择的图片则显示预览图 -->
-            <image v-if="item.url" :src="item.url"/>
+            <image v-if="item.url" :src="'https://vrimg.justeasy.cn/' + item.url"/>
             <!-- 删除按钮 -->
             <i class="delete-icon" v-if="item.url" title="删除图片" @click.stop="deleteImage(index)">&times;</i>
           </view>
@@ -103,43 +102,29 @@ const water_text = ref(false)
 const water_text_open = ref(false)
 const formData = ref({
   title: '',
-  classify: '',
+  classify: [],
 });
 const uploadData = ref({})
 const formRef = ref(null);
 const workShow = ref(false);
 const workchange = ref([0, 0]);
-const selectedImages = ref([
-  {
-    url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-  },
-  {
-    url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-  },
-  {
-    url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-  },
-  {
-    url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-  },
-  {
-    url: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
-  }
-]);
+const selectedImages = ref([]);
 const confirm = ({ selectedValue, selectedOptions }) => {
   console.log(workchange,'workchange')
   console.log(selectedValue[0], selectedOptions[0],selectedValue[1],selectedOptions[1]);
-  checkBigcate.value = selectedOptions[0].text
-  checksmallcate.value = selectedOptions[1].text
+  checkBigcate.value = selectedOptions[0].value
+  checksmallcate.value = selectedOptions[1].value
+  formData.value.classify = selectedValue;
   workShow.value = false;
 };
 
 const submit = () => {
   formRef.value?.validate().then(({ valid, errors }) => {
     if (valid) {
-      console.log('success:', formData.value);
+      let imageUrls = selectedImages.value.join(',');
+      console.log('success:', formData.value,selectedImages.value,selectedImages.value.join(','));
       Taro.request({
-        url: 'https://vr.justeasy.cn/Xcx/pano/get_cate',
+        url: 'https://vr.justeasy.cn/xcx/pano/create_vr',
         method: 'POST',
         header: {
           'content-type': 'application/json'
@@ -153,16 +138,21 @@ const submit = () => {
           myshow: myshow.value ? 1 : 0,
           water_text: water_text.value ? '开启防盗保护' : null,
           water_text_open: water_text_open.value ? 1 : 0,
-          pic: '', // 数组
+          pic: selectedImages.value.map(item => item.url).join(','),
           sceneids:''
         }
       }).then((res) => {
         if (res.statusCode === 200) {
           uploadData.value = res.data.data;
           if (uploadData.value) {
-            requestApi();
+            requestApi(uploadData.value);
           }
         } else {
+          Taro.showToast({
+            title: res.data.data.msg,
+            icon: 'error',
+            duration: 2000
+          })
           throw new Error('Failed to fetch data');
         }
       });
@@ -196,30 +186,44 @@ const uploadImage = async () => {
     sizeType: ['original', 'compressed'],
     sourceType: ['album', 'camera'],
     success: function (res) {
+      console.log(res)
       // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
       const tempFilePaths = res.tempFilePaths;
+      console.log(tempFilePaths)
       Taro.uploadFile({
-        url: ' https://vr.justeasy.cn/User/Upload/image/pano/1.php', // 上传的地址
-        filePath: '',
-        name: 'fileFieldName', // 文件对应的 key，服务器端通过这个 key 可以获取到文件二进制内容
-        formData: { // 其他额外的 form 数据
-          fieldName1: 'stringValue1',
-          fieldName2: 'stringValue2',
+        url: 'https://vr.justeasy.cn/User/Upload/image/pano/1.php', // 上传的地址
+        filePath: tempFilePaths[0],
+        name:'file',
+        formData:{
+          sessionid: '39',
         },
-        header: {
-          'Content-Type': 'multipart/form-data' // 注意：这里的 Content-Type 不需要手动设置，会自动处理
-        },
-        success(res) {
-          const data = res.data
-          Taro.showToast({
-            title: '上传成功',
-            icon: 'success',
-            duration: 2000
-          })
-        },
+        success: function(res) {
+          let dataStr = res.data.trim(); // 去除字符串前后空白字符
+          if (dataStr.startsWith('\uFEFF')) {
+            dataStr = dataStr.substring(1); // 移除BOM字符
+          }
+          let data;
+          try {
+            data = JSON.parse(dataStr);
+            if (data.status === 200) {
+              selectedImages.value.push({
+                url: data.filename
+              });
+              console.log(data,1234456)
+            } else {
+              Taro.showToast({
+                title: data.msg,
+                icon: 'error',
+                duration: 2000
+              })
+            }
+          } catch (error) {
+            console.error('Invalid server response format - could not parse as JSON:', dataStr);
+          }
+      },
         fail(err) {
           Taro.showToast({
-            title: err,
+            title: '上传失败',
             icon: 'error',
             duration: 2000
           })
@@ -261,31 +265,36 @@ const openToast = (type, msg, cover = false) => {
 /*合成*/
 const statusCode = ref(0);
 
-const requestApi = () => {
-  const apiUrl = 'https://your-api-endpoint.com/data';
+const requestApi = (uploadData) => {
+  const { edit_url, ...newUploadData } = uploadData;
+  const apiUrl = 'https://vr.justeasy.cn/xcx/pano/validate';
   Taro.request({
     url: apiUrl,
-    method: 'GET',
+    method: 'POST',
+    data: newUploadData,
     success: (res) => {
-      const newStatusCode = res.statusCode;
+      const newStatusCode = res.data.data;
       // 判断状态码
-      if (newStatusCode === 200) {
-        console.log('接口返回状态码 200，操作完成');
+      if (newStatusCode !== null) {
+        Taro.showToast({
+          title:'合成成功'
+        })
+        Taro.navigateTo({
+          url: `/pages/webview/index?url=${newStatusCode.url}`,
+        })
       } else if (newStatusCode === -200) {
         console.log('接口返回状态码 -200，继续刷新接口');
         // 在这里可以添加一些其他逻辑，例如处理数据等
         // 等待一段时间后继续刷新接口
         setTimeout(() => {
-          requestApi();
+          requestApi(uploadData);
         }, 2000); // 间隔 2000 毫秒（2 秒）
       } else {
         console.error('接口返回状态码异常:', newStatusCode);
-
         // 在第二次及以后的 -200 状态码时报错
         if (statusCode.value === -200) {
           console.error('第二次及以后的 -200 状态码，报错');
         }
-
         // 更新状态码
         statusCode.value = newStatusCode;
       }

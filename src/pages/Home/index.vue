@@ -70,13 +70,13 @@
           <view class="home-search-wrap">
             <nut-searchbar v-model="keywords" placeholder="搜索全景关键词">
               <template #rightout>
-                <view class="icon">
+                <view class="icon" @click="showSort = true">
                   <image
                       style="width: 24px;height: 24px;"
                       src="../../../images/paixu.png"
                   />
                 </view>
-                <view class="icon">
+                <view class="icon" @click="showBatch = true">
                   <image
                       style="width: 24px;height: 24px;"
                       src="../../../images/icon.png"
@@ -105,8 +105,12 @@
                     <view class="text">生成短视频</view>
                   </view>
                   <view class="right-set">
-                    <image class="icon" src="../../../images/set.png"></image>
-                    <image class="icon" src="../../../images/gengduo.png"></image>
+                    <view @click="toWorkSetting(item.pano_id)">
+                      <image class="icon" src="../../../images/set.png"/>
+                    </view>
+                    <view @click="toMoreWorkSetting(item.pano_id)">
+                     <image class="icon" src="../../../images/gengduo.png"></image>
+                    </view>
                   </view>
                 </view>
               </view>
@@ -203,7 +207,7 @@
         <nut-tab-pane title="素材库" pane-key="4" class="list-box">
           <view class="home-search-wrap">
             <nut-searchbar v-model="keywords" placeholder="搜索素材库关键词">
-              <template #leftin>  <IconFont name="search"></IconFont> </template>
+              <template #leftin> <IconFont name="search"></IconFont> </template>
             </nut-searchbar>
           </view>
           <nut-tabs v-model="materialType" align="left" @click="getMaterial">
@@ -221,7 +225,7 @@
                       <view class="vide-wrap">
                         <view class="date">{{ item.addtime }}</view>
                       </view>
-                      <view class="right-set">
+                      <view class="right-set" @click="delMaterial(item)">
                         <IconFont name="del"></IconFont>
                       </view>
                     </view>
@@ -243,7 +247,7 @@
                       <view class="vide-wrap">
                         <view class="date">{{ item.addtime }}</view>
                       </view>
-                      <view class="right-set">
+                      <view class="right-set" @click="delMaterial(item)">
                         <IconFont name="del"></IconFont>
                       </view>
                     </view>
@@ -265,7 +269,7 @@
                       <view class="vide-wrap">
                         <view class="date">{{ item.addtime }}</view>
                       </view>
-                      <view class="right-set">
+                      <view class="right-set" @click="delMaterial(item)">
                         <IconFont name="del"></IconFont>
                       </view>
                     </view>
@@ -294,13 +298,13 @@
                   <view class="work-title">{{ item.name }}</view>
                 </view>
                 <view class="info-line">
-                  <view class="date">{{ item.addtime }}</view>
-                  <view class="date">{{ item.endtime }}</view>
+                  <view class="date">删除时间：{{ item.addtime }}</view>
+                  <view class="date">生效时间：{{ item.endtime }}</view>
                 </view>
                 <view class="info-line">
                   <view class="vide-wrap">
-                    <view class="delete">删除</view>
-                    <view class="refer">恢复</view>
+                    <view class="delete" @click="delWork(item)">删除</view>
+                    <view class="refer" @click="referWork(item)">恢复</view>
                   </view>
                 </view>
               </view>
@@ -325,56 +329,164 @@
             <view>
               <image src="../../../images/link.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="shareLink">作品链接</view>
+            <view class="share-type" open-type="share" @click="copyLink">作品链接</view>
           </view>
           <view class="share-item">
             <view>
               <image src="../../../images/code.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="shareLink">作品二维码</view>
+            <view class="share-type" open-type="share" @click="shareQcode">作品二维码</view>
           </view>
         </view>
 <!--  vip      -->
         <view class="share-title">你还可以选择（部分功能vip）</view>
         <view class="share-wrap">
-          <view class="share-item">
+          <view class="share-item" @click="showShort = true">
             <view>
               <image src="../../../images/cardgreen.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="shareLink">临时链接</view>
+            <view class="share-type" open-type="share">临时链接</view>
           </view>
           <view class="share-item">
             <view>
               <image src="../../../images/card.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="shareLink">作品加密</view>
+            <view class="share-type" open-type="share" @click="dialogVisibleWorkEncrypt = true">作品加密</view>
           </view>
           <view class="share-item">
             <view>
               <image src="../../../images/cardblue.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="shareLink">生成卡片</view>
+            <view class="share-type" open-type="share" @click="ToCard">生成卡片</view>
           </view>
         </view>
       </nut-popup>
-<!-- 设置 -->
       <nut-popup v-model:visible="showSet" position="bottom" :style="{ height: '18%' }">
         <nut-cell class="set-pop">
-          <view style="text-align:center">回收站密码</view>
+          <view @click="referVisible = true">回收站密码</view>
         </nut-cell>
-        <nut-cell>
-          <view>清空回收站</view>
+        <nut-cell class="set-pop">
+          <view @click="visible = true">清空回收站</view>
         </nut-cell>
       </nut-popup>
-<!--      <nut-dialog-->
-<!--          title="作品加密"-->
-<!--          v-model:visible="visible"-->
-<!--          @cancel="onOk"-->
-<!--          @ok="onCancel"-->
-<!--      >-->
-<!--      </nut-dialog>-->
-<!--      <nut-dialog title="基础弹框" content="这是基础弹框。" v-model:visible="visible" @cancel="onCancel" @ok="onOk" />-->
+      <nut-popup v-model:visible="showSort" position="bottom" :style="{ height: '18%' }">
+        <nut-cell class="set-pop">
+          <view @click="Sort('0')">默认</view>
+        </nut-cell>
+        <nut-cell class="set-pop">
+          <view @click="Sort('1')">修改时间</view>
+        </nut-cell>
+      </nut-popup>
+      <nut-popup v-model:visible="showBatch" position="bottom" :style="{ height: '18%' }">
+        <nut-cell class="set-pop">
+          <view @click="getSift">分组筛选</view>
+        </nut-cell>
+        <nut-cell class="set-pop">
+          <view @click="goBatch">批量操作</view>
+        </nut-cell>
+      </nut-popup>
+      <nut-dialog v-model:visible="showSift"  title="分组筛选" @cancel="SiftonCancel" @ok="SiftonOk" class="sift-dailog">
+        <view class="check-wrap">
+          <nut-radio-group v-model="groupid" class="home-radio">
+            <nut-radio :label="item.groupid" shape="button" v-for="item in siftList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
+          </nut-radio-group>
+        </view>
+      </nut-dialog>
+      <nut-dialog
+          title="是否清空回收站"
+          v-model:visible="visible"
+          @cancel="onOk"
+          @ok="onCancel"
+      >
+        删除后作品数据清空,无法恢复,请谨慎操作！！！
+      </nut-dialog>
+      <nut-dialog
+          title="是否从回收站中删除"
+          v-model:visible="delvisible"
+          @ok="ondelOk"
+      >
+        删除后作品数据清空,无法恢复,请谨慎操作！！！
+      </nut-dialog>
+      <nut-dialog
+          title="是否从回收站中删除"
+          v-model:visible="referWorkVisible"
+          @ok="onRefer"
+      >
+        删除后作品数据清空,无法恢复,请谨慎操作！！！
+      </nut-dialog>
+      <nut-dialog
+          title="回收站密码"
+          v-model:visible="referVisible"
+          @cancel="onOk"
+          @ok="onCancel"
+      >
+        <view>
+          <nut-radio-group v-model="passwordFlag" direction="horizontal">
+            <nut-radio label="1">开启</nut-radio>
+            <nut-radio label="2">关闭</nut-radio>
+          </nut-radio-group>
+          <nut-input v-if="passwordFlag=== '1'" v-model="password" placeholder="请输入加密密码"/>
+        </view>
+      </nut-dialog>
+<!-- 二维码  -->
+      <nut-popup v-model:visible="showQcode" :style="{ padding: '30px 50px' }">
+         <image :src="qrcode" class="qrcode-img"></image>
+         <view class="save-code" @click="saveImage">保存到相册</view>
+      </nut-popup>
+<!-- 临时链接  -->
+      <nut-dialog title="临时链接" v-model:visible="showShort" @ok="onSaveShort" >
+        <view class="short-wrap">
+          <view class="short-item">
+            <view class="short-item-title">是否开启临时分享:</view>
+            <nut-switch v-model="temporaryVal" active-color="#6C6BFC" />
+          </view>
+          <view class="short-item">
+            <view class="short-item-title">设置临时链接分享时间:</view>
+            <nut-input-number v-model="minute">
+              <template #left-icon>
+              </template>
+              <template #right-icon>
+              </template>
+            </nut-input-number>
+            <view class="short-item-title">分钟</view>
+          </view>
+          <view class="short-item">
+            <view class="short-item-title">作品中是否显示失效时间:</view>
+            <nut-switch v-model="showTime" active-color="#6C6BFC" />
+          </view>
+          <view class="short-item">限时分享与临时链接功能合并</view>
+          <view class="short-item">开启后会生成新的分享链接，不影响原有作品链接</view>
+          <view class="short-item">原限时分享可前往PC端设置关闭</view>
+        </view>
+      </nut-dialog>
+<!--  作品加    -->
+      <DialogWorkEncrypt
+          :dialogVisible="dialogVisibleWorkEncrypt"
+          @cancel="onWorkEncryptDialogCancel"
+          @ok="onWorkEncryptDialogOk"
+          :password="password"
+          :encryptFlag="'1'"
+      />
+<!-- 生成卡片     -->
+      <nut-popup v-model:visible="showCard"  closeable close-icon-position="top-right" round>
+        <view class="card-wrap">
+          <view class="card-title">{{ card.title }}</view>
+          <view class="card-user">
+            <image :src="card.avatar" mode="aspectFit" class="card-user-img"></image>
+            {{ card.user_name }}
+          </view>
+          <view class="card-content">
+            <image :src="card.preview" mode="aspectFit" class="card-img"></image>
+          </view>
+          <view class="card-footer">
+            <image :src="card.logo_url" mode="aspectFit" class="card-logo"></image>
+            <image :src="card.code_url" mode="aspectFit" class="card-code"></image>
+          </view>
+        </view>
+        <view class="save-code" @click="drawAndSave">保存到相册</view>
+      </nut-popup>
     </view>
+    <canvas ref="canvas" id="myCanvas" canvas-id="myCanvas" style="width: 400px; height:400px"></canvas>
   </view>
 </template>
 <script setup>
@@ -384,8 +496,15 @@ import {onMounted, ref} from 'vue';
 import './index.scss'
 import { useShareAppMessage } from '@tarojs/taro'
 import {IconFont} from "@nutui/icons-vue-taro";
+import {list} from "postcss";
+import DialogWorkEncrypt from "../Work/DialogWorkEncrypt.vue";
+const qrcode = ref('');
 const showTips = ref(false);
 const visible = ref(false);
+const referVisible = ref(false);
+const referWorkVisible = ref(false);
+const passwordFlag = ref('2');
+const password = ref('');
 const type = ref('0');
 let showShare = ref(false);
 const url = ref('https://img12.360buyimg.com/imagetools/jfs/t1/196430/38/8105/14329/60c806a4Ed506298a/e6de9fb7b8490f38.png');
@@ -394,18 +513,66 @@ const useAppEnv = useAppEnvStore();
 const UserInfo = ref({})
 const UserVip = ref('')
 const keywords = ref('')
+const temporaryVal = ref(false)
 const page = ref(1);
 const page_size = ref(30);
-const groupid = ref('')
+const groupid = ref('0')
 const sort = ref('0')
 const dataList = ref([])
 const bookValue = ref('1')
+const minute = ref('10')
 const showSet = ref(false)
+const showSort = ref(false)
+const showBatch = ref(false)
+const showSift = ref(false)
+const showQcode = ref(false)
+const showShort = ref(false)
+const showTime = ref(false)
+const showCard = ref(false)
+const delvisible = ref(false)
 const onCancel = () => {
   console.log('event cancel');
 };
 const onOk = () => {
   console.log('event ok');
+};
+const onSaveShort = () => {
+  Taro.request({
+    url: ' https://vr.justeasy.cn/xcx/pano/get_temp_url',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      uid: '39',
+      panoid: shareObject.value.pano_id,
+      is_open: temporaryVal.value ? 1 : 0,
+      times: minute.value,
+      is_show:showShort.value ? 1 : 0,
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      Taro.setClipboardData({
+        data: res.data.data,
+        success: function (res) {
+          Taro.getClipboardData({
+            success: function (res) {
+              console.log(res.data) // data
+            }
+          })
+        }
+      })
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  });
+};
+const SiftonCancel = () => {
+  console.log('event cancel');
+};
+const SiftonOk = () => {
+  getList()
+  showBatch.value = false
 };
 const baseClick = () => {
   visible.value = true;
@@ -437,10 +604,27 @@ const openTips = () => {
   console.log('showTips')
   showTips.value = true;
 };
+const shareObject = ref({})
 const shareLink = (item) => {
   console.log('shareLink')
   showShare.value = true;
-
+  shareObject.value = item
+};
+const toWorkSetting = (panoid) => {
+  Taro.navigateTo({
+    url: `/pages/Work/index?panoid=${panoid}`,
+  })
+}
+const toMoreWorkSetting = (panoid) => {
+  Taro.navigateTo({
+    url: `/pages/MoreWork/index?panoid=${panoid}`,
+  })
+}
+const goBatch = () => {
+  showBatch.value = false;
+  Taro.navigateTo({
+    url: `/pages/BatchOperate/index?type=${type.value}`,
+  })
 };
 useShareAppMessage((res) => {
   if (res.from === 'button') {
@@ -531,6 +715,11 @@ const openInternet = () => {
   console.log('openInternet')
 }
 /*获取列表*/
+const Sort = (num) => {
+  sort.value = num
+  getList()
+  showSort.value = false
+}
 /*获取用户信息*/
 const getList = () => {
   console.log('getList')
@@ -579,7 +768,6 @@ const getBookInfo = () => {
     }).then((res) => {
       if (res.statusCode === 200) {
         bookData.value = res.data.data;
-        console.log('dataList', dataList.value)
       } else {
         throw new Error('Failed to fetch data');
       }
@@ -638,5 +826,211 @@ const getRecycle = () => {
         throw new Error('Failed to fetch data');
       }
     });
+}
+const siftList = ref([])
+const getSift = () => {
+  console.log('getSift')
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/get_group',
+    method: 'POST',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      uid: '39'
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      siftList.value = res.data.data;
+      showSift.value = true
+    }
+  })
+}
+const copyLink = () =>{
+  Taro.setClipboardData({
+    data: shareObject.value.detail_url,
+    success: function (res) {
+      Taro.getClipboardData({
+        success: function (res) {
+          console.log(res.data) // data
+        }
+      })
+    }
+  })
+}
+const shareQcode = () => {
+  Taro.request({
+    url: ' https://vr.justeasy.cn/xcx/pano/get_qrcode',
+    method:'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      uid: '39',
+      panoid: shareObject.value.pano_id,
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      qrcode.value = res.data.data.qrcode;
+      showQcode.value = true
+    }
+  })
+}
+const saveImage = () =>{
+  Taro.saveImageToPhotosAlbum({
+    filePath: shareObject.value.detail_url,
+    success: function (res) {
+      Taro.showToast({
+        title: '保存成功',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+  })
+}
+const dialogVisibleWorkEncrypt = ref(false)
+const onWorkEncryptDialogCancel = () => {
+  dialogVisibleWorkEncrypt.value = false
+}
+const onWorkEncryptDialogOk = (currentPassword,currentEncryptFlag) => {
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/set_pwd',
+    method:'POST',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      panoid: shareObject.value.pano_id,
+      pwd: currentPassword,
+      is_encrypt: currentEncryptFlag.value,
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      dialogVisibleWorkEncrypt.value = false
+      Taro.showToast({
+        title: '保存成功'
+      })
+    }
+  })
+}
+const card = ref({})
+const ToCard = () =>{
+  showCard.value = true
+  Taro.request({
+    url: ' https://vr.justeasy.cn/xcx/pano/get_card',
+    method:'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      panoid: shareObject.value.pano_id,
+      uid: '39',
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      card.value = res.data.data;
+    }
+  })
+}
+const delMaterial = (item) =>{
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/del_scene',
+    method:'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      sceneid: item.sceneid,
+      uid: '39',
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      Taro.showToast({
+        title: '删除成功'
+      })
+      getMaterial()
+    }
+  })
+}
+const ondelOk = (item) =>{
+  showCard.value = true
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/del_recycle',
+    method:'POST',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      panoid: item.panoid,
+      uid: '39',
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      getRecycle()
+    }
+  })
+}
+const referWork = (item) => {
+  Taro.request({
+    url: ' https://vr.justeasy.cn/xcx/pano/reset_recycle',
+    method:'POST',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      panoid: item.panoid,
+      uid: '39',
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      getRecycle()
+    }
+  })
+}
+const delWork = (item) => {
+  delvisible.value = true
+}
+const canvasContext = Taro.createCanvasContext('myCanvas');
+function drawPoster() {
+  // 绘制背景和标题等.
+  canvasContext.beginPath();
+  canvasContext.setFillStyle('#fff');
+  canvasContext.fillRect(0, 0, 400, 400);
+  canvasContext.setFillStyle('#000');
+  canvasContext.setFontSize(24);
+  canvasContext.fillText(card.value.user_name, 200, 40);
+  canvasContext.drawImage(card.value.preview,20,20);
+  canvasContext.drawImage(card.value.logo_url,60,80);
+  canvasContext.drawImage(card.value.code_url,80,80);
+  return new Promise((resolve, reject) => {
+    canvasContext.draw(false, () => {
+      console.log('canvasContext', canvasContext);
+      resolve(canvasContext);
+      canvasContext.clearRect(0, 0, 400, 400);
+    });
+  });
+}
+
+function saveToAlbum(tempFilePath) {
+  return new Promise((resolve, reject) => {
+    Taro.saveImageToPhotosAlbum({
+      filePath: tempFilePath,
+      success: () => resolve(),
+      fail: err => reject(err),
+    });
+  });
+}
+
+function drawAndSave() {
+  drawPoster()
+      .then(() => Taro.canvasToTempFilePath({
+        canvasId: 'myCanvas',
+      }))
+      .then((res) => { // res 是一个对象，需要从中获取 filePath 字符串
+        const tempFilePath = res.tempFilePath;
+        return saveToAlbum(tempFilePath);
+      })
+      .then(() => console.log('已成功保存至相册'))
+      .catch(err => console.error('绘制或保存海报时发生错误：', err));
 }
 </script>

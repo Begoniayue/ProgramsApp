@@ -182,7 +182,7 @@
   margin-right: 5px;
 }
 .list-box{
-  padding: 0px;
+  padding: 10px 0;
   .nut-tabs__titles-item__line{
     display: none;
   }
@@ -350,5 +350,126 @@
 }
 .set-pop{
   justify-content: center;
+}
+.home-radio{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  .nut-radio{
+    margin-left: 20px;
+    margin-bottom: 20px;
+    .nut-radio__button--active{
+      border: 2px solid #6C6BFC;
+      color: #6c6bfc;
+      &::after{
+        background: #FFFFFF;
+        border-radius: 25px;
+      }
+    }
+  }
+}
+.check-btn{
+  display: flex;
+  justify-content: space-around;
+  padding-left: 30px;
+  padding-top: 30px;
+  .reset{
+    width: 160px;
+    height: 70px;
+    background: #FFFFFF;
+    border-radius: 35px;
+    border: 1px solid #CBCBCB;
+    color: #666666;
+  }
+  .sure{
+    width: 290px;
+    height: 70px;
+    background: linear-gradient(270deg, #AE48F1, #6C6BFC);
+    border-radius: 35px;
+  }
+  .nut-button--primary:not([disabled]):active{
+    background: #6C6BFC;
+  }
+}
+.nut-dialog{
+  .nut-dialog__header{
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .nut-dialog__footer{
+    .nut-dialog__footer-ok{
+      background: #6C6BFC;
+    }
+    .nut-dialog__footer-cancel{
+      background: #FFFFFF;
+      border: 1px solid #6C6BFC;
+      color: #6C6BFC;
+    }
+  }
+}
+.nut-icon-check-checked{
+  color: #6C6BFC;
+}
+.save-code{
+  color: #fff;
+  font-size: 28rpx;
+  text-align: center;
+  background: #6C6BFC;
+  width: 200px;
+  margin: 0 auto;
+  margin-bottom: 30px;
+  padding: 10px 40px;
+  border-radius: 32px;
+}
+.qrcode-img{
+  width: 200px;
+  height: 200px;
+}
+.short-wrap{
+  line-height: 60px;
+}
+.short-item{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+  .card-title{
+    text-align: center;
+    font-size: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .card-user{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    image{
+      width: 60px;
+      height: 60px;
+      margin-right: 20px;
+      border-radius: 50%;
+    }
+  }
+  .card-content{
+    image{
+      width: 640px;
+      height: 420px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+  }
+  .card-footer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    image{
+      width: 220px;
+      height: 100px;
+    }
+  }
+.card-wrap{
+  padding: 10px;
+  margin-top: 30px;
 }
 button::after{ border: none; }

@@ -24,7 +24,9 @@
               />
             </view>
           </template>
-          <template #rightin>  <IconFont name="search"></IconFont> </template>
+          <template #rightin>
+            <IconFont name="search"></IconFont>
+          </template>
         </nut-searchbar>
       </view>
       <nut-popup v-model:visible="showRight" position="right" :style="{ width: '75%', height: '100%' }">
@@ -51,7 +53,7 @@
                 <nut-tab-pane :title="item.name" :pane-key="item.id" class="list_box" v-for="item in typeList" :key="item.id">
                   <view class="item" v-for="item in dataList" :key="item.id">
                     <view class="list" >
-                      <view class="list_pic" @click="getUrlLink">
+                      <view class="list_pic" @click="getUrlLink(item)">
                         <view class="pic"><image :src="item.preview_url"/></view>
                       </view>
                       <view class="item_bt">{{ item.name }}</view>
@@ -59,9 +61,13 @@
                         <view class="item-description-text">
                           {{ item.username }}
                         </view>
-                        <view class="item-thumb">
+                        <view class="item-thumb" @click="Collection(item.id)" v-if="item.is_like == 0">
                           <image src="../../../images/tuijian.png" class="item-count-icon"/>
                           <view class="item-count">{{ item.like_num }}</view>
+                        </view>
+                        <view class="item-thumb" @click="unableCollection()" v-else>
+                          <image src="../../../images/tuicolor.png" class="item-count-icon"/>
+                          <view class="item-count color">{{ item.like_num }}</view>
                         </view>
                       </view>
                     </view>
@@ -99,10 +105,6 @@ let typeList =  ref([])
 /*搜索*/
 import { Search2 } from '@nutui/icons-vue-taro';
 const searchValue = ref('');
-/*search*/
-const searchInit = (text) => {
-  console.log('search', text);
-};
 const showRight = ref(false);
 
 /**/
@@ -115,9 +117,9 @@ onMounted(() => {
   siftDate()
 })
 /*getUrlLink*/
-const getUrlLink = () => {
+const getUrlLink = (item) => {
   Taro.navigateTo({
-    url: '/pages/Synthesis/index',
+    url: `/pages/webview/index?url=${item.work_url}`
   })
 };
 /* 接口请求*/
@@ -213,6 +215,25 @@ const Sure = () => {
   page.value = 1
   listInit()
 };
+const Collection = (id) => {
+  Taro.request({
+    url: ' https://vr.justeasy.cn/xcx/pano/set_like',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      pano_id: id,
+      uid: '39',
+    }
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      listInit()
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  });
+}
 const onReachBottom = () => {
   console.log('触底啦！加载更多数据');
   loadMoreData()
@@ -232,5 +253,15 @@ const tabClick = (e) => {
   type.value = Number(e.paneKey)
   page.value = 1
   listInit()
+}
+const unableCollection = () => {
+  Taro.showToast({
+    title: '赞过啦',
+  })
+}
+/*作品加密*/
+const dialogVisibleWorkEncrypt = ref(false)
+const openWorkEncryptDialog = () => {
+  dialogVisibleWorkEncrypt.value = true
 }
 </script>

@@ -1,0 +1,36 @@
+.nut-dialog{
+  .nut-dialog__header{
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .nut-dialog__footer{
+    .nut-dialog__footer-ok{
+      background: #6C6BFC;
+    }
+    .nut-dialog__footer-cancel{
+      background: #FFFFFF;
+      border: 1px solid #6C6BFC;
+      color: #6C6BFC;
+    }
+  }
+}
+.nut-icon-check-checked{
+   color: #6C6BFC;
+ }
+.home-radio{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  .nut-radio{
+    margin-left: 20px;
+    margin-bottom: 20px;
+    .nut-radio__button--active{
+      border: 2px solid #6C6BFC;
+      color: #6c6bfc;
+      &::after{
+        background: #FFFFFF;
+        border-radius: 25px;
+      }
+    }
+  }
+}
