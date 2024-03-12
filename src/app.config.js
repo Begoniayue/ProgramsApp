@@ -8,6 +8,8 @@ export default {
     'pages/MoreWork/index',
     'pages/BGMSet/index',
     'pages/BatchOperate/index',
+    'pages/Login/index',
+    'pages/Material/index'
   ],
   window: {
     backgroundTextStyle: 'light',

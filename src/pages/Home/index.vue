@@ -2,10 +2,14 @@
   <view class="home-content">
     <view class="home-top-wrap">
       <view class="user-info-container">
-        <view class="avatar-container">
+        <view class="avatar-container" v-if="storedUid !== null">
           <image :src="UserInfo.avatar" class="avatar-img"/>
         </view>
-        <view class="info-container">
+        <view class="avatar-container-uid" v-else>
+          <image src="../../../images/icon.jpg" class="avatar-img"/>
+          <view class="open-vip" @click="toLogin">请登录</view>
+        </view>
+        <view class="info-container" v-if="storedUid !== null">
           <view class="user-info" v-if="UserVip === '165'">
            <view class="user-name">{{ UserInfo.username }}</view>
            <view class="vip-icon"><image src="../../../images/vip.png" /></view>
@@ -29,15 +33,6 @@
               <view class="text">
                 <text class="text-bold">会员容量:{{ UserInfo.total }}</text>(限时，会员期可用)
               </view>
-<!--              <view class="text">-->
-<!--                <b>扩容商城:14000</b>(限时，会员期可用)-->
-<!--              </view>-->
-<!--              <view class="text">-->
-<!--                <b>付费容量:0</b>-->
-<!--              </view>-->
-<!--              <view class="text">-->
-<!--                <b>永久赠送:0</b>(永久，旧版扩容套餐充值补偿)-->
-<!--              </view>-->
               <view class="text">
                 <text class="text-bold">历史作品数: {{ UserInfo.history }}</text>
               </view>
@@ -56,16 +51,15 @@
           />
         </view>
       </view>
-
     </view>
-    <view class="home-web-wrap">
+    <view class="home-web-wrap" @click="openInternet">
       <image src="../../../images/web.png"></image>
-      <view class="web-btn" @click="openInternet">点击了解</view>
+      <view class="web-btn">点击了解</view>
     </view>
     <!--选项-->
     <view>
 <!-- 搜索     -->
-      <nut-tabs v-model="type" class="home-tabs" @click="tabClick">
+      <nut-tabs v-if="storedUid !== null" v-model="type" class="home-tabs" @click="tabClick">
         <nut-tab-pane title="全景图" pane-key="0" class="list-box">
           <view class="home-search-wrap">
             <nut-searchbar v-model="keywords" placeholder="搜索全景关键词">
@@ -312,6 +306,13 @@
           </view>
         </nut-tab-pane>
       </nut-tabs>
+      <nut-tabs v-else v-model="type" @click="tabClickLogin">
+      <nut-tab-pane title="全景图" pane-key="0" class="login-list">您还没有登录哦~ </nut-tab-pane>
+      <nut-tab-pane title="平面图" pane-key="11" class="login-list"> 您还没有登录哦~</nut-tab-pane>
+      <nut-tab-pane title="预约信息" pane-key="3" class="login-list"> 您还没有登录哦~</nut-tab-pane>
+      <nut-tab-pane title="素材库" pane-key="4" class="login-list"> 您还没有登录哦~ </nut-tab-pane>
+      <nut-tab-pane title="回收站" pane-key="5" class="login-list"> 您还没有登录哦~ </nut-tab-pane>
+    </nut-tabs>
 <!--分享-->
       <nut-popup v-model:visible="showShare" position="bottom" :style="{ height: '40%' }" class="popupShare">
         <view class="share-title">直接分享</view>
@@ -498,6 +499,7 @@ import { useShareAppMessage } from '@tarojs/taro'
 import {IconFont} from "@nutui/icons-vue-taro";
 import {list} from "postcss";
 import DialogWorkEncrypt from "../Work/DialogWorkEncrypt.vue";
+import CryptoJS from "crypto-js";
 const qrcode = ref('');
 const showTips = ref(false);
 const visible = ref(false);
@@ -544,11 +546,12 @@ const onSaveShort = () => {
       'content-type': 'application/json'
     },
     data: {
-      uid: '39',
       panoid: shareObject.value.pano_id,
       is_open: temporaryVal.value ? 1 : 0,
       times: minute.value,
       is_show:showShort.value ? 1 : 0,
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -557,7 +560,9 @@ const onSaveShort = () => {
         success: function (res) {
           Taro.getClipboardData({
             success: function (res) {
-              console.log(res.data) // data
+              Taro.showToast({
+                title: '复制成功',
+              })
             }
           })
         }
@@ -599,6 +604,13 @@ const tabClick = (e) => {
     default:
       getList()
   }
+}
+const tabClickLogin = () => {
+  Taro.showToast({
+    title: '请先登录',
+    icon: 'none',
+    duration: 2000
+  })
 }
 const openTips = () => {
   console.log('showTips')
@@ -646,13 +658,17 @@ useShareAppMessage((res) => {
     path: '/page/user?id=123',
   }
 })
+const storedUid = ref(null)
 onMounted(() => {
+  console.log('mounted',Taro.getStorageSync('userUid'))
+  if (Taro.getStorageSync('userUid') !== '' ){
+    storedUid.value = Taro.getStorageSync('userUid');
+  }
   getUserInfo();
   getList()
 })
 /*获取用户信息*/
 const getUserInfo = () => {
-  console.log('getUserInfo')
   return  Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_user_info',
     method: 'GET',
@@ -660,7 +676,8 @@ const getUserInfo = () => {
       'content-type': 'application/json'
     },
     data: {
-      uid: '39'
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -700,7 +717,8 @@ const openInternet = () => {
           'content-type': 'application/json'
         },
         data: {
-          uid: '39'
+          uesr_token:Taro.getStorageSync('userUid'),
+          token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
         },
       }
   ).then((res) => {
@@ -736,7 +754,8 @@ const getList = () => {
       sort: sort.value,
       keywords: keywords.value,
       type: type.value,
-      uid: '39'
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -763,7 +782,8 @@ const getBookInfo = () => {
       data: {
         page:bookingType.value,
         type: bookingType.value,
-        uid: '39'
+        uesr_token:Taro.getStorageSync('userUid'),
+        token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
       },
     }).then((res) => {
       if (res.statusCode === 200) {
@@ -790,7 +810,8 @@ const getMaterial = () => {
       page: materialPage.value,
       type: materialType.value,
       keywords: materialKeywords.value,
-      uid: '39'
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) =>{
     if (res.statusCode === 200) {
@@ -816,7 +837,8 @@ const getRecycle = () => {
     data: {
       page: recyclePage.value,
       page_size: recyclePage_size.value,
-      uid: '39'
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
     }).then((res) => {
       if (res.statusCode === 200) {
@@ -837,7 +859,8 @@ const getSift = () => {
       'content-type': 'application/json'
     },
     data: {
-      uid: '39'
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -866,7 +889,8 @@ const shareQcode = () => {
       'content-type': 'application/json'
     },
     data: {
-      uid: '39',
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       panoid: shareObject.value.pano_id,
     },
   }).then((res) => {
@@ -924,12 +948,18 @@ const ToCard = () =>{
     },
     data: {
       panoid: shareObject.value.pano_id,
-      uid: '39',
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
       card.value = res.data.data;
     }
+  })
+}
+const toLogin = () => {
+  Taro.navigateTo({
+    url: '/pages/Login/index'
   })
 }
 const delMaterial = (item) =>{
@@ -941,10 +971,11 @@ const delMaterial = (item) =>{
     },
     data: {
       sceneid: item.sceneid,
-      uid: '39',
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
-    if (res.statusCode === 200) {
+    if (res.data.status === 200) {
       Taro.showToast({
         title: '删除成功'
       })
@@ -953,7 +984,6 @@ const delMaterial = (item) =>{
   })
 }
 const ondelOk = (item) =>{
-  showCard.value = true
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/del_recycle',
     method:'POST',
@@ -962,10 +992,14 @@ const ondelOk = (item) =>{
     },
     data: {
       panoid: item.panoid,
-      uid: '39',
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
-    if (res.statusCode === 200) {
+    if (res.data.status === 200) {
+      Taro.showToast({
+        title: '删除成功'
+      })
       getRecycle()
     }
   })
@@ -979,10 +1013,14 @@ const referWork = (item) => {
     },
     data: {
       panoid: item.panoid,
-      uid: '39',
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
-    if (res.statusCode === 200) {
+    if (res.data.status === 200) {
+      Taro.showToast({
+        title: '恢复成功'
+      })
       getRecycle()
     }
   })
@@ -1032,5 +1070,14 @@ function drawAndSave() {
       })
       .then(() => console.log('已成功保存至相册'))
       .catch(err => console.error('绘制或保存海报时发生错误：', err));
+}
+function saveToCard() {
+  return new Promise((resolve, reject) => {
+    Taro.saveImageToPhotosAlbum({
+      filePath:card.value.data,
+      success: () => resolve(),
+      fail: err => reject(err),
+    });
+  });
 }
 </script>

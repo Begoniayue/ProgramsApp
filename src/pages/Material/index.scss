@@ -1,3 +1,51 @@
-.index{
-  background: aliceblue ;
+.material-wrap{
+
+}
+.material-image{
+  width: 200px;
+  height: 200px;
+}
+.nut-radio{
+  position: relative;
+}
+.nut-icon-checked{
+  color: #6C6BFC;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.nut-radio-group{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.nut-tabs .nut-tabs__titles .nut-tabs__titles-item.active .nut-tabs__titles-item__line{
+  background: linear-gradient(270deg, #AE48F1, #6C6BFC);
+  width: 40%;
+  height: 10px;
+  border-radius: 20px;
+}
+.book-list{
+  padding: 0 10px;
+}
+.nut-tabs__list{
+  background: #ffffff;
+  padding-left: 20px;
+  padding-bottom: 20px;
+}
+.nut-tabs__titles{
+  background: none;
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+.save-btn{
+  background: #6c6bfc;
+  padding: 10px 0;
+  text-align: center;
+  color: #F8F8F8;
+  font-size: 28px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding-top: 10px;
 }

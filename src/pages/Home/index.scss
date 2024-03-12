@@ -90,6 +90,7 @@
   width: 100%;
   position: relative;
   margin: 10px 0;
+  margin-top: 40px;
   image{
     width: 100%;
     height: 120px;
@@ -276,6 +277,9 @@
   width: 40%;
   height: 10px;
   border-radius: 20px;
+}
+.nut-tabs .nut-tabs__titles .nut-tabs__titles-item.active .nut-tabs__titles-item__text{
+ color: #333333;
 }
 .home-search-wrap{
   display: flex;
@@ -471,5 +475,30 @@
 .card-wrap{
   padding: 10px;
   margin-top: 30px;
+}
+.avatar-container-uid{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .open-vip{
+    margin-left: 40px;
+    font-size: 33rpx;
+    color: #333333;
+    font-weight: bold;
+  }
+}
+.login-list{
+  padding: 10rpx 0;
+  font-size: 28rpx;
+  display: flex;
+  justify-content: center;
+  margin-top: 140px;
+  color: #999999;
+}
+.nut-tabs__titles-item__text{
+  color: #999999;
+}
+.nut-tabs__list{
+  background: #ffffff;
 }
 button::after{ border: none; }

@@ -4,31 +4,8 @@
       <image src="../../../images/logo.svg" mode="aspectFit" />
     </view>
     <view class="title">让设计更容易 为设计师赋能</view>
-
-<!-- 手机号   -->
-    <view v-if="String(useAppEnv.currentEnv) === 'TT'">
-      <nut-form class="login-form">
-        <nut-form-item label="+86" prop="phoneNumber">
-          <nut-input v-model="formData.phoneNumber" placeholder="请输入手机号" type="text" />
-        </nut-form-item>
-        <nut-form-item prop="verifyCode">
-          <nut-input v-model="formData.verifyCode" placeholder="请输入验证码" type="text" />
-          <view class="get-code" :disabled="countDown > 0" @click="getCodeButton">{{ countDown > 0 ? `${countDown}秒后重试` : '获取验证码' }}</view>
-        </nut-form-item>
-      </nut-form>
-      <view class="phone-login" @click="login">登录</view>
-    </view>
-<!--  快捷登录  -->
-    <view v-if="String(useAppEnv.currentEnv) === 'TT'">
-      <view class="quick-title">用其他登录方式</view>
-      <view class="container">
-        <view class="quick-login" @click="quickLogin">抖音登录</view>
-      </view>
-    </view>
-    <view v-if="String(useAppEnv.currentEnv) === 'WEAPP'">
-      <view class="container">
-        <view class="phone-login" @click="quickLogin">立即登录</view>
-      </view>
+    <view class="container">
+      <view class="quick-login" @click="quickLogin">立即登录</view>
     </view>
     <view class="quick-argen">
       <nut-checkbox v-model="agreeMent"> 我已阅读并同意<view class="agreement" @click="toAgreeMent">用户协议</view> </nut-checkbox>
@@ -39,8 +16,6 @@
 import { ref } from 'vue';
 import Taro from '@tarojs/taro';
 import { useUserStore } from '../../stores/userStore';
-import { useAppEnvStore } from '../../stores/appEnvStore'
-const useAppEnv = useAppEnvStore();
 const phoneNumber = ref('');
 const verificationCode = ref('');
 import './index.scss'
@@ -51,11 +26,10 @@ const formData = ref({
 const countDown = ref(0); // 新增倒计时状态
 const agreeMent = ref(false);
 const quickLogin = async () => {
-  if (Taro.getEnv() === Taro.ENV_TYPE.DOUYIN) {
-    tt.login({
-      success: function(res) {
-        const { code } = res;
-        console.log('登录返回的code：', code);
+  wx.login({
+    success: function(res) {
+      const { code } = res;
+      console.log('登录返回的code：', code);
         const response = Taro.request({
           url: 'https://vr.justeasy.cn/xcx/login/dylogin',
           method: 'GET',
@@ -65,42 +39,16 @@ const quickLogin = async () => {
         });
         response.then((res) => {
           const { data, uid } = res;
-          Taro.setStorageSync('userUid', uid);
-          const userStore = useUserStore();
-          userStore.setUserAndPersist(uid);
+           Taro.setStorageSync('userUid', uid);
+            const userStore = useUserStore();
+            userStore.setUserAndPersist(uid);
         })
-        // 进行后续处理，例如发送code到服务器进行验证
-      },
-      fail: function(err) {
-        console.error('登录失败：', err);
-      }
-    });
-  }else if (Taro.getEnv() === Taro.ENV_TYPE.WEAPP){
-    wx.login({
-      success: function(res) {
-        const { code } = res;
-        console.log('登录返回的code：', code);
-        const response = Taro.request({
-          url: 'https://vr.justeasy.cn/xcx/login/wxlogin',
-          method: 'GET',
-          data: {
-            code: code,
-          },
-        });
-        response.then((res) => {
-          const { data, uid } = res.data.data;
-          console.log('登录返回的code：', res.data.data.uid);
-          console.log(uid)
-          Taro.setStorageSync('userUid', uid);
-          const userStore = useUserStore();
-          userStore.setUserAndPersist(uid);
-          Taro.switchTab({
-            url: '/pages/Home/index'
-          })
-        })
-      }
-    })
-  }
+      // 进行后续处理，例如发送code到服务器进行验证
+    },
+    fail: function(err) {
+      console.error('登录失败：', err);
+    }
+  });
 }
 
 const login = () => {
@@ -167,9 +115,9 @@ function getCodeButton() {
 async function getCodeRequest() {
   Taro.request({
     url: 'https://ai.justeasy.cn/ai/sendcode',
-    method: 'GET',
+    method: 'POST',
     data: {
-      username: formData.value.phoneNumber,
+      phoneNumber: phoneNumber.value,
     },
     success: (res) => {
       countDown.value = 60;

@@ -140,7 +140,10 @@ const getDate = () =>{
 }
 // 加载更多数据
 const listInit = async (pageNumber) => {
-  return Taro.request({
+  Taro.showLoading({
+    title: '加载中...',
+  });
+  Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/index',
     method: 'GET',
     header: {
@@ -152,13 +155,13 @@ const listInit = async (pageNumber) => {
       smallcate:smallcate.value,
       bigcate:bigcate.value,
       keywords:searchValue.value,
-      uid:'39',
+        uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
     }
   }).then((res) => {
     if (res.statusCode === 200) {
       dataList.value = res.data.data.list;
-      console.log(res.data.data.list)
-      console.log(dataList)
+      Taro.hideLoading();
     } else {
       throw new Error('Failed to fetch data');
     }

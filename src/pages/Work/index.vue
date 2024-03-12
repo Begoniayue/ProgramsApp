@@ -1,11 +1,11 @@
 <template>
   <view>
     <nut-cell-group>
-      <nut-cell title="作品加密" round-radius="0" desc="当前密码" is-link @click="openWorkEncryptDialog"/>
+      <nut-cell title="作品加密" :round-radius="0" :desc="workInfo.pwd_value==='0'? '作品加密':'当前密码：' + workInfo.pwd_value" is-link @click="openWorkEncryptDialog"/>
     </nut-cell-group>
     <nut-cell-group>
-      <nut-cell title="作品标题" round-radius="0" :desc=title is-link @click="openEditWorkTitleDialog"/>
-      <nut-cell title="全景作者" round-radius="0" :desc="author" is-link @click="openEditWorkAuthorDialog"/>
+      <nut-cell title="作品标题" round-radius="0" :desc=workInfo.name is-link @click="openEditWorkTitleDialog"/>
+      <nut-cell title="全景作者" round-radius="0" :desc="workInfo.author" is-link @click="openEditWorkAuthorDialog"/>
       <nut-cell title="设计说明" round-radius="0" desc="设计说明" is-link @click="openEditDesignDescDialog"/>
       <nut-cell title="编辑背景音乐" round-radius="0" desc="music" is-link @click="toSetBGM"/>
       <nut-cell round-radius="0" is-link @click="uploadImage">
@@ -13,17 +13,17 @@
           <view style="position: relative">
             作品logo
             <view style="position: absolute; right: 5px;top: 0">
-              图片
+              <image :src="'https://vrimg.justeasy.cn/' + workInfo.avatar"  mode="aspectFit" style="width: 20px;height: 20px"></image>
             </view>
           </view>
         </template>
       </nut-cell>
-      <nut-cell round-radius="0" is-link>
+      <nut-cell round-radius="0" is-link @click="uploadWater">
         <template #title>
           <view style="position: relative">
             作品水印
             <view style="position: absolute; right: 5px;top: 0">
-              图片
+              <image :src="'https://vrimg.justeasy.cn/' + workInfo.water"  mode="aspectFit" style="width: 20px;height: 20px"></image>
             </view>
           </view>
         </template>
@@ -109,6 +109,7 @@ const author = ref('')
 const intro = ref('')
 const water = ref('')
 const avatar = ref('')
+const logo = ref('')
 // ----------------------作品加密---------------------
 const dialogVisibleWorkEncrypt = ref(false)
 const openWorkEncryptDialog = () => {
@@ -120,8 +121,29 @@ const onWorkEncryptDialogCancel = () => {
 const panoid = ref('')
 onMounted(()=>{
   panoid.value = Taro.getCurrentInstance().router.params.panoid
+  getInfo()
   console.log(panoid.value)
 })
+const workInfo = ref({})
+const getInfo = () => {
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/get_edit_info',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      panoid: panoid.value,
+          uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+    },
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      workInfo.value = res.data
+      console.log(res.data)
+    }
+  })
+}
 const onWorkEncryptDialogOk = (val,currentEncryptFlag) => {
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/set_pwd',
@@ -156,6 +178,7 @@ const onWorkTitleDialogCancel = () => {
 }
 
 const onWorkTitleDialogOk = (val) => {
+  workInfo.value.name = val
   title.value = val
   changeInfo()
   console.log(val)
@@ -169,7 +192,7 @@ const onWorkAuthorDialogCancel = () => {
   dialogVisibleWorkAuthor.value = false
 }
 const onWorkAuthorDialogOk = (val) => {
-  author.value = val
+  workInfo.value.author.value = val
   changeInfo()
 }
 // ----------------------设计说明---------------------
@@ -181,7 +204,7 @@ const onDesignDescDialogCancel = () => {
   dialogVisibleDesignDesc.value = false
 }
 const onDesignDescDialogOk = (val) => {
-  intro.value = val
+  workInfo.value.intro.value = val
   changeInfo()
 }
 // ----------------------背景音乐---------------------
@@ -249,13 +272,14 @@ const changeInfo = (value) => {
       'content-type': 'application/json'
     },
     data: {
-      uid:'39',
+        uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       panoid: panoid.value,
-      name:title.value,
-      author: author.value,
-      intro: intro.value,
-      water: water.value,
-      avatar: avatar.value
+      name:workInfo.value.name,
+      author: workInfo.value.author,
+      intro: workInfo.value.intro,
+      water: workInfo.value.water,
+      avatar: workInfo.value.avatar
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -279,7 +303,8 @@ const moreSet = (value) => {
       'content-type': 'application/json'
     },
     data: {
-      uid:'39',
+        uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       type: type.value,
       panoid: panoid.value,
       speed:speed.value,
@@ -315,8 +340,56 @@ const uploadImage = async () => {
           sessionid: '39',
         },
         success(res) {
-          const data = res.data
-          console.log(data)
+          let dataStr = res.data.trim(); // 去除字符串前后空白字符
+          if (dataStr.startsWith('\uFEFF')) {
+            dataStr = dataStr.substring(1); // 移除BOM字符
+          }
+          let data;
+          data = JSON.parse(dataStr);
+          logo.value = data.filename
+          console.log(logo.value)
+          Taro.showToast({
+            title: '上传成功',
+            icon: 'success',
+            duration: 2000
+          })
+        },
+        fail(err) {
+          Taro.showToast({
+            title: err,
+            icon: 'error',
+            duration: 2000
+          })
+          console.error('上传失败：', err)
+        }
+      })
+    }
+  })
+};
+const uploadWater = async () => {
+  Taro.chooseImage({
+    count: 1, // 默认9
+    sizeType: ['original', 'compressed'],
+    sourceType: ['album', 'camera'],
+    success: function (res) {
+      // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
+      const tempFilePaths = res.tempFilePaths;
+      Taro.uploadFile({
+        url: 'https://vr.justeasy.cn/user/upload/water', // 上传的地址
+        filePath: tempFilePaths[0],
+        name:'file',
+        formData:{
+          sessionid: '39',
+        },
+        success(res) {
+          let dataStr = res.data.trim(); // 去除字符串前后空白字符
+          if (dataStr.startsWith('\uFEFF')) {
+            dataStr = dataStr.substring(1); // 移除BOM字符
+          }
+          let data;
+          data = JSON.parse(dataStr);
+          water.value = data.url
+          console.log(logo.value)
           Taro.showToast({
             title: '上传成功',
             icon: 'success',

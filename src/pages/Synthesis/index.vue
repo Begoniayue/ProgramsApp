@@ -3,18 +3,15 @@
     <nut-form
       class="upload-form-box"
       ref="formRef"
+      prop="title"
       :model-value="formData"
       :rules="{
-      name: [
+      title: [
         { required: true, message: '请输入作品名称' },
-        {
-          message: '作品名称至少两个字符',
-          validator: nameLengthValidator
-        }
       ]
     }"
     >
-      <nut-form-item label="作品名称" required>
+      <nut-form-item label="作品名称" required prop="title">
         <nut-input v-model="formData.title" placeholder="请输入作品名称" type="text"  @blur="customBlurValidate('name')" class="form-input"/>
       </nut-form-item>
       <nut-form-item
@@ -34,7 +31,7 @@
           <image src="../../../images/arrow.png" class="work-icon"/>
         </view>
         <nut-popup v-model:visible="workShow" position="bottom" class="work-pop">
-          <nut-picker v-model="workchange" :columns="columns" @confirm="confirm" @cancel="workShow = false" />
+          <nut-picker v-model="formData.classify" :columns="columns" @confirm="confirm" @cancel="workShow = false" />
         </nut-popup>
       </nut-form-item>
       <nut-form-item
@@ -50,6 +47,7 @@
       <nut-form-item
         label="水印展示："
         prop="water"
+        class="publish-wrap"
       >
         <view class="publish-box">
           <nut-checkbox v-model="water_text" shape="button"> 开启防盗保护 </nut-checkbox>
@@ -57,14 +55,16 @@
         </view>
       </nut-form-item>
       <nut-form-item label="上传全景：" class="upload-box">
-        <view class="upload-img" @click="uploadImage">
+<!-- @click="uploadImage"       -->
+        <view class="upload-img" @click="showFlag = true">
           <view class="upload-img-icon" >
             <image src="../../../images/fangda.png"  />
             <view class="upload-img-text">上传2:1全景图</view>
           </view>
           <view class="upload-img-box" v-for="(item, index) in selectedImages" :key="index" @click="chooseImage">
             <!-- 如果有已选择的图片则显示预览图 -->
-            <image v-if="item.url" :src="'https://vrimg.justeasy.cn/' + item.url"/>
+            <image v-if="item.url && !material"  :src="'https://vrimg.justeasy.cn/' + item.url"  mode="aspectFit" />
+            <image v-else-if="item.url && material"  :src="item.url" />
             <!-- 删除按钮 -->
             <i class="delete-icon" v-if="item.url" title="删除图片" @click.stop="deleteImage(index)">&times;</i>
           </view>
@@ -85,6 +85,14 @@
     <view class="upload-btn">
       <nut-button @click="submit" class="submit-btn">开始合成</nut-button>
     </view>
+    <nut-popup v-model:visible="showFlag" position="bottom" :style="{ height: '18%' }">
+      <nut-cell class="set-pop">
+        <view @click="toMaterial">素材库选择</view>
+      </nut-cell>
+      <nut-cell class="set-pop">
+        <view @click="uploadImage">本地上传</view>
+      </nut-cell>
+    </nut-popup>
   </view>
 </template>
 <script setup>
@@ -99,11 +107,14 @@ const checksmallcate = ref('')
 const wantshow = ref(false)
 const myshow = ref(false)
 const water_text = ref(false)
+const showFlag = ref(false)
 const water_text_open = ref(false)
 const formData = ref({
   title: '',
   classify: [],
 });
+import { useDidShow } from '@tarojs/taro'
+
 const uploadData = ref({})
 const formRef = ref(null);
 const workShow = ref(false);
@@ -112,54 +123,89 @@ const selectedImages = ref([]);
 const confirm = ({ selectedValue, selectedOptions }) => {
   console.log(workchange,'workchange')
   console.log(selectedValue[0], selectedOptions[0],selectedValue[1],selectedOptions[1]);
-  checkBigcate.value = selectedOptions[0].value
-  checksmallcate.value = selectedOptions[1].value
+  checkBigcate.value = selectedOptions[0].text
+  checksmallcate.value = selectedOptions[1].text
   formData.value.classify = selectedValue;
   workShow.value = false;
 };
-
+import CryptoJS from 'crypto-js';
 const submit = () => {
-  formRef.value?.validate().then(({ valid, errors }) => {
-    if (valid) {
-      let imageUrls = selectedImages.value.join(',');
-      console.log('success:', formData.value,selectedImages.value,selectedImages.value.join(','));
-      Taro.request({
-        url: 'https://vr.justeasy.cn/xcx/pano/create_vr',
-        method: 'POST',
-        header: {
-          'content-type': 'application/json'
-        },
-        data: {
-          uid:39,
-          bcate: checkBigcate.value,
-          scate: checksmallcate.value,
-          title: formData.value.title,
-          wantshow: wantshow.value ? 1 : 0,
-          myshow: myshow.value ? 1 : 0,
-          water_text: water_text.value ? '开启防盗保护' : null,
-          water_text_open: water_text_open.value ? 1 : 0,
-          pic: selectedImages.value.map(item => item.url).join(','),
-          sceneids:''
-        }
-      }).then((res) => {
-        if (res.statusCode === 200) {
-          uploadData.value = res.data.data;
-          if (uploadData.value) {
-            requestApi(uploadData.value);
-          }
-        } else {
-          Taro.showToast({
-            title: res.data.data.msg,
-            icon: 'error',
-            duration: 2000
-          })
-          throw new Error('Failed to fetch data');
-        }
-      });
-    } else {
-      console.warn('error:', errors);
-    }
+  const sortedData = {
+    bcate: formData.value.classify[0],
+    scate: formData.value.classify[1],
+    title: formData.value.title,
+    wantshow: wantshow.value ? 1 : 0,
+    myshow: myshow.value ? 1 : 0,
+    water_text: water_text.value || null,
+    water_text_open: water_text_open.value ? 1 : 0,
+    pic: selectedImages.value.map(item => item.url).join(','),
+    sceneids:'',
+    uesr_token: Taro.getStorageSync('userUid')
+  };
+  const orderedData = {};
+  Object.keys(sortedData).sort().forEach(key => {
+    orderedData[key] = sortedData[key];
   });
+  const queryString = Object.keys(orderedData)
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(orderedData[key])}`)
+      .join('&');
+  console.log(queryString+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh','queryString')
+  const encryptedToken = CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString();
+  console.log(encryptedToken,'encryptedData')
+  if (selectedImages.value.length!== 0){
+    Taro.showLoading({
+      title: '加载中',
+    })
+    formRef.value?.validate().then(({ valid, errors }) => {
+      if (valid) {
+        let imageUrls = selectedImages.value.join(',');
+        console.log('success:', formData.value,selectedImages.value,selectedImages.value.join(','));
+        Taro.request({
+          url: 'https://vr.justeasy.cn/xcx/pano/create_vr',
+          method: 'POST',
+          header: {
+            'content-type': 'application/json'
+          },
+          data: {
+            bcate: formData.value.classify[0],
+            scate: formData.value.classify[1],
+            title: formData.value.title,
+            wantshow: wantshow.value ? 1 : 0,
+            myshow: myshow.value ? 1 : 0,
+            water_text: water_text.value || null,
+            water_text_open: water_text_open.value ? 1 : 0,
+            pic: selectedImages.value.map(item => item.url).join(','),
+            sceneids:'',
+            uesr_token:Taro.getStorageSync('userUid'),
+            token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+          }
+        }).then((res) => {
+          if (res.statusCode === 200) {
+            console.log(res.data.data);
+            uploadData.value = res.data.data;
+            if (uploadData.value) {
+              requestApi(uploadData.value);
+            }
+          } else {
+            Taro.showToast({
+              title: res.data.data.msg,
+              icon: 'error',
+              duration: 2000
+            })
+            throw new Error('Failed to fetch data');
+          }
+        });
+      } else {
+        console.warn('error:', errors);
+      }
+    });
+  }else {
+    Taro.showToast({
+      title: '请上传全景图',
+      icon: 'error',
+      duration: 2000
+    })
+  }
 };
 // 失去焦点校验
 const customBlurValidate = (prop) => {
@@ -181,6 +227,8 @@ const nameLengthValidator = (val) => {
 };
 /*上传*/
 const uploadImage = async () => {
+  showFlag.value = false;
+  material.value = false
   Taro.chooseImage({
     count: 1, // 默认9
     sizeType: ['original', 'compressed'],
@@ -209,7 +257,6 @@ const uploadImage = async () => {
               selectedImages.value.push({
                 url: data.filename
               });
-              console.log(data,1234456)
             } else {
               Taro.showToast({
                 title: data.msg,
@@ -273,30 +320,23 @@ const requestApi = (uploadData) => {
     method: 'POST',
     data: newUploadData,
     success: (res) => {
-      const newStatusCode = res.data.data;
+      const newStatusCode = res.data
+      console.log('接口返回状态码:', newStatusCode);
       // 判断状态码
-      if (newStatusCode !== null) {
+      if (newStatusCode.data !== null) {
         Taro.showToast({
           title:'合成成功'
         })
         Taro.navigateTo({
-          url: `/pages/webview/index?url=${newStatusCode.url}`,
+          url: `/pages/webview/index?url=${newStatusCode.edit_url}`,
         })
-      } else if (newStatusCode === -200) {
+      } else {
         console.log('接口返回状态码 -200，继续刷新接口');
         // 在这里可以添加一些其他逻辑，例如处理数据等
         // 等待一段时间后继续刷新接口
         setTimeout(() => {
           requestApi(uploadData);
         }, 2000); // 间隔 2000 毫秒（2 秒）
-      } else {
-        console.error('接口返回状态码异常:', newStatusCode);
-        // 在第二次及以后的 -200 状态码时报错
-        if (statusCode.value === -200) {
-          console.error('第二次及以后的 -200 状态码，报错');
-        }
-        // 更新状态码
-        statusCode.value = newStatusCode;
       }
     },
     fail: (error) => {
@@ -329,7 +369,32 @@ const siftDate = () =>{
     }
   });
 }
+const material = ref(false);
+const toMaterial = () => {
+  showFlag.value = false
+  Taro.navigateTo({
+    url: `/pages/Material/index`,
+  })
+}
+const getMaterial = () => {
+  const value = Taro.getStorageSync('materialList')
+  console.log(value, 'materialList','value')
+  let newUrl = value.replace("https://vrimg.justeasy.cn/", "");
+  const index = selectedImages.value.findIndex(item => item.url === value);
+  // 如果不存在，则将新对象推入数组
+  if (index === -1) {
+    selectedImages.value.push({
+      url: newUrl,
+    });
+  }
+  Taro.removeStorageSync('materialList');
+}
+useDidShow(() => {
+  getMaterial()
+})
+const userUid = ref('')
 onMounted(()=>{
+  userUid.value = Taro.getStorageSync('userUid')
   siftDate();
 })
 </script>

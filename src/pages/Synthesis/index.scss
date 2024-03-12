@@ -132,6 +132,9 @@
 }
 .upload-box{
   display: block;
+  .nut-form-item__label{
+    padding-left: 30px;
+  }
 }
 .upload-img-icon{
   width: 198px;
@@ -188,7 +191,7 @@
 }
 .publish-wrap{
   .nut-form-item__label{
-     padding-left: 20px;
+     padding-left: 60px;
    }
 }
 .upload-btn{
@@ -198,4 +201,7 @@
 .upload-tip{
   padding: 20px;
   line-height: 45px;
+}
+.set-pop{
+  justify-content: center;
 }

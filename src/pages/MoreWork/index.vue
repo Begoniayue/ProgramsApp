@@ -21,6 +21,7 @@
       </template>
     </nut-cell>
   </nut-cell-group>
+  <view class="delete" @click="deletePano">删除作品</view>
 </template>
 <script setup>
 const panoid = ref('')
@@ -57,7 +58,8 @@ const moreSet = (value,open) => {
       'content-type': 'application/json'
     },
     data: {
-      uid:'39',
+        uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       type: value,
       panoid: panoid.value,
       is_open: open?'1':'0',
@@ -72,5 +74,41 @@ const moreSet = (value,open) => {
       throw new Error('Failed to fetch data');
     }
   });
+}
+const deletePano = () => {
+  Taro.showModal({
+    title: '提示',
+    content: '确定要删除该作品吗？',
+    success: function (res) {
+      if (res.confirm) {
+        if (res.confirm) {
+          Taro.request({
+            url: 'https://vr.justeasy.cn/xcx/pano/del_pano',
+            method: 'POST',
+            header: {
+              'content-type': 'application/json'
+            },
+            data: {
+                uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+              panoid: panoid.value,
+            },
+          }).then((res) => {
+            if (res.data.success) {
+              Taro.showToast({
+                title: '删除成功',
+                icon: 'success',
+              })
+              Taro.navigateBack()
+            } else {
+              throw new Error('Failed to fetch data');
+            }
+          });
+        }
+      } else if (res.cancel) {
+        console.log('用户点击取消')
+      }
+    }
+  })
 }
 </script>

@@ -51,8 +51,8 @@
     "@tarojs/runtime": "3.6.23",
     "@tarojs/shared": "3.6.23",
     "@tarojs/taro": "3.6.23",
+    "crypto-js": "^4.2.0",
     "pinia": "^2.0.10",
-    "taro-ui": "^3.3.0",
     "vue": "^3.2.24"
   },
   "devDependencies": {

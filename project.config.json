@@ -1,9 +1,9 @@
 {
   "miniprogramRoot": "dist/",
   "description": "",
-  "appid": "tte0e7965a7fd672e101",
+  "appid": "wx27a6036564d9f270",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": true,
     "enhance": true,
     "compileHotReLoad": false,
@@ -22,7 +22,12 @@
   },
   "compileType": "miniprogram",
   "srcMiniprogramRoot": "dist/",
-  "condition": {},
+  "condition": {
+    "miniprogram": {
+      "current": -1,
+      "list": []
+    }
+  },
   "editorSetting": {
     "tabIndent": "auto",
     "tabSize": 2

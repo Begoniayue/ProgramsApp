@@ -94,7 +94,8 @@ const getList = () => {
       groupid: groupid.value,
       sort: sort.value,
       type: type.value,
-      uid: '39'
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -119,7 +120,8 @@ const getSift = () => {
       'content-type': 'application/json'
     },
     data: {
-      uid: '39'
+          uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -137,7 +139,8 @@ const SiftonOk = () => {
     },
     data: {
       ids: state.value.join(','),
-      uid: '39',
+          uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       group_id:groupid.value
     },
   }).then((res) => {
@@ -157,7 +160,8 @@ const delOk = () => {
     },
     data: {
       ids: state.value.join(','),
-      uid: '39'
+          uesr_token:Taro.getStorageSync('userUid'),
+    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
