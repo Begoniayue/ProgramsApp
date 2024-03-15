@@ -806,7 +806,7 @@ const openInternet = () => {
         },
         data: {
           uesr_token:Taro.getStorageSync('userUid'),
-          token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+          token: CryptoJS.MD5(Taro.getStorageSync('userUid')+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
         },
       }
   ).then((res) => {
@@ -831,9 +831,22 @@ const Sort = (num) => {
   getList()
   showSort.value = false
 }
+import generateAndEncryptToken from '../../util/sort'
 /*获取用户信息*/
 const getList = () => {
   console.log('getList')
+  const data = {
+    page: page.value,
+    page_size: page_size.value,
+    groupid: groupid.value,
+    sort: sort.value,
+    keywords: keywords.value,
+    type: type.value,
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
+  console.log('encryptedToken', encryptedToken)
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_my_pano_list',
     method: 'POST',
@@ -841,14 +854,8 @@ const getList = () => {
       'content-type': 'application/json'
     },
     data: {
-      page: page.value,
-      page_size: page_size.value,
-      groupid: groupid.value,
-      sort: sort.value,
-      keywords: keywords.value,
-      type: type.value,
-      uesr_token:Taro.getStorageSync('userUid'),
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+     ...data,
+      token: encryptedToken
     },
   }).then((res) => {
     if (res.statusCode === 200) {

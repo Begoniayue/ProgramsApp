@@ -132,10 +132,37 @@ const confirm = ({ selectedValue, selectedOptions }) => {
   formData.value.checkBigcate = selectedOptions[0].text;
   workShow.value = false;
 };
+import generateAndEncryptToken from '../../util/sort.js'
 const submit = () => {
-  console.log('formData', formData.value,selectedImages.value);
   const urls = selectedImages.value.map(item => item.url).filter(url => url !== ''); // 过滤掉空字符串（即 url 为空的情况）;
   const pic = urls.length > 1 ? urls.join(',') : urls[0] || '';
+  const sortedData = {
+    bcate: formData.value.classify[0],
+    scate: formData.value.classify[1],
+    title: formData.value.title,
+    wantshow: wantshow.value ? 1 : 0,
+    myshow: myshow.value ? 1 : 0,
+    water_text: water_text.value || null,
+    water_text_open: water_text_open.value ? 1 : 0,
+    pic: pic,
+    sceneids:'',
+    uesr_token: Taro.getStorageSync('userUid')
+  };
+  // const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  // const encryptedToken = generateAndEncryptToken(sortedData, secret);
+  console.log(encryptedToken); // 页面上只需要使用这个encryptedToken
+  const filteredData = Object.entries(sortedData)
+    .filter(([key, value]) => value !== null && value !== ''&& value !== undefined)
+    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+// 将对象的键按字母顺序排序并转换为查询字符串
+  const queryString = Object.entries(filteredData)
+    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+  console.log(queryString+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh','queryString')
+  const encryptedToken = CryptoJS.MD5(queryString+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString();
+  console.log(encryptedToken,'encryptedData')
+  console.log('formData', formData.value,selectedImages.value);
   if (pic.length!== 0){
     formRef.value?.validate().then(({ valid, errors }) => {
       if (valid) {
@@ -151,17 +178,8 @@ const submit = () => {
             'content-type': 'application/json'
           },
           data: {
-            bcate: formData.value.classify[0],
-            scate: formData.value.classify[1],
-            title: formData.value.title,
-            wantshow: wantshow.value ? 1 : 0,
-            myshow: myshow.value ? 1 : 0,
-            water_text: water_text.value || null,
-            water_text_open: water_text_open.value ? 1 : 0,
-            pic: pic,
-            sceneids:'',
-            uesr_token:Taro.getStorageSync('userUid'),
-            token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+           ...sortedData,
+            token: encryptedToken
           }
         }).then((res) => {
           if (res.statusCode === 200) {
