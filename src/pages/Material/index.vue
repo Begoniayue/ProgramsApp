@@ -47,12 +47,15 @@ import './index.scss'
 import { IconFont } from '@nutui/icons-vue-taro';
 import {onMounted, ref} from 'vue';
 const MaterialVal = ref('');
+const MaterialValBuy = ref('');
+const MaterialValVip = ref('');
 
 const materialPage = ref(1)
 const materialType = ref('-1')
 const searchValue = ref('')
 const materialList= ref([])
 const getMaterial = () => {
+  MaterialVal.value = ''
   console.log('getMaterial',materialType.value)
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/scene_list',
@@ -64,18 +67,20 @@ const getMaterial = () => {
       page: materialPage.value,
       type: materialType.value,
       keywords: searchValue.value,
-          uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) =>{
     if (res.statusCode === 200) {
-      materialList.value = res.data.data;
+      const uniqueMaterials = [...new Map(res.data.data.map(item => [item.preview, item])).values()];
+      materialList.value = uniqueMaterials;
       console.log('materialList',materialList.value)
     } else {
       throw new Error('Failed to fetch data');
     }
   })
 }
+import CryptoJS from 'crypto-js';
 async function saveMaterial() {
   try {
     // 保存数据到本地存储

@@ -15,24 +15,20 @@
         <nut-input v-model="formData.title" placeholder="请输入作品名称" type="text"  @blur="customBlurValidate('name')" class="form-input"/>
       </nut-form-item>
       <nut-form-item
-        label="作品分类："
-        prop="classify"
-        required
-        v-model="formData.classify"
-        :rules="[
-        { required: true, message: '请选择作品分类' },
+          label="作品分类"
+          required
+          prop="checkBigcate"
+          :rules="[
+          { required: true, message: '请选择作品分类' },
       ]"
       >
         <view class="work-type" v-if="checkBigcate && checksmallcate">
           {{checkBigcate}}-{{checksmallcate}}
         </view>
         <view v-else class="work-type" @click="workShow = true">
-          请选择作品分类
+          <nut-input v-model="formData.checkBigcate" placeholder="请选择作品分类" type="text" readonly class="form-input"/>
           <image src="../../../images/arrow.png" class="work-icon"/>
         </view>
-        <nut-popup v-model:visible="workShow" position="bottom" class="work-pop">
-          <nut-picker v-model="formData.classify" :columns="columns" @confirm="confirm" @cancel="workShow = false" />
-        </nut-popup>
       </nut-form-item>
       <nut-form-item
         label="发布展示："
@@ -41,7 +37,7 @@
       >
         <view class="publish-box">
           <nut-checkbox v-model="wantshow" shape="button"> 全景首页 </nut-checkbox>
-          <nut-checkbox v-model="myshow" shape="button"> 微官网(VIP) </nut-checkbox>
+          <nut-checkbox v-model="myshow" shape="button" @change="vipShow"> 微官网(VIP) </nut-checkbox>
         </view>
       </nut-form-item>
       <nut-form-item
@@ -93,12 +89,20 @@
         <view @click="uploadImage">本地上传</view>
       </nut-cell>
     </nut-popup>
+    <nut-popup v-model:visible="workShow" position="bottom" class="work-pop">
+      <nut-picker v-model="formData.classify" :columns="columns" @confirm="confirm" @cancel="workShow = false" />
+    </nut-popup>
+    <VipDilaog
+        :dialogVisible="vipVisible"
+        @cancel="vipCancelSynthesis"
+    />
   </view>
 </template>
 <script setup>
 import Taro from "@tarojs/taro";
 import { ref, onMounted } from 'vue';
 import './index.scss'
+import CryptoJS from 'crypto-js';
 import {chooseImage,uploadFile} from "@tarojs/taro";
 let bigcateList =  ref([])
 let smallcateList =  ref([])
@@ -106,60 +110,40 @@ const checkBigcate = ref('')
 const checksmallcate = ref('')
 const wantshow = ref(false)
 const myshow = ref(false)
+const vipVisible = ref(false)
 const water_text = ref(false)
 const showFlag = ref(false)
 const water_text_open = ref(false)
 const formData = ref({
   title: '',
   classify: [],
+  checkBigcate:'',
 });
 import { useDidShow } from '@tarojs/taro'
-
 const uploadData = ref({})
 const formRef = ref(null);
 const workShow = ref(false);
 const workchange = ref([0, 0]);
 const selectedImages = ref([]);
 const confirm = ({ selectedValue, selectedOptions }) => {
-  console.log(workchange,'workchange')
-  console.log(selectedValue[0], selectedOptions[0],selectedValue[1],selectedOptions[1]);
   checkBigcate.value = selectedOptions[0].text
   checksmallcate.value = selectedOptions[1].text
   formData.value.classify = selectedValue;
+  formData.value.checkBigcate = selectedOptions[0].text;
   workShow.value = false;
 };
-import CryptoJS from 'crypto-js';
 const submit = () => {
-  const sortedData = {
-    bcate: formData.value.classify[0],
-    scate: formData.value.classify[1],
-    title: formData.value.title,
-    wantshow: wantshow.value ? 1 : 0,
-    myshow: myshow.value ? 1 : 0,
-    water_text: water_text.value || null,
-    water_text_open: water_text_open.value ? 1 : 0,
-    pic: selectedImages.value.map(item => item.url).join(','),
-    sceneids:'',
-    uesr_token: Taro.getStorageSync('userUid')
-  };
-  const orderedData = {};
-  Object.keys(sortedData).sort().forEach(key => {
-    orderedData[key] = sortedData[key];
-  });
-  const queryString = Object.keys(orderedData)
-      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(orderedData[key])}`)
-      .join('&');
-  console.log(queryString+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh','queryString')
-  const encryptedToken = CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString();
-  console.log(encryptedToken,'encryptedData')
-  if (selectedImages.value.length!== 0){
-    Taro.showLoading({
-      title: '加载中',
-    })
+  console.log('formData', formData.value,selectedImages.value);
+  const urls = selectedImages.value.map(item => item.url).filter(url => url !== ''); // 过滤掉空字符串（即 url 为空的情况）;
+  const pic = urls.length > 1 ? urls.join(',') : urls[0] || '';
+  if (pic.length!== 0){
     formRef.value?.validate().then(({ valid, errors }) => {
       if (valid) {
+        Taro.showLoading({
+          title: '加载中',
+        })
         let imageUrls = selectedImages.value.join(',');
-        console.log('success:', formData.value,selectedImages.value,selectedImages.value.join(','));
+        console.log('success:',selectedImages.value,selectedImages.value.join(','));
         Taro.request({
           url: 'https://vr.justeasy.cn/xcx/pano/create_vr',
           method: 'POST',
@@ -174,7 +158,7 @@ const submit = () => {
             myshow: myshow.value ? 1 : 0,
             water_text: water_text.value || null,
             water_text_open: water_text_open.value ? 1 : 0,
-            pic: selectedImages.value.map(item => item.url).join(','),
+            pic: pic,
             sceneids:'',
             uesr_token:Taro.getStorageSync('userUid'),
             token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
@@ -196,6 +180,11 @@ const submit = () => {
           }
         });
       } else {
+        Taro.showToast({
+          title: '请填写必填项',
+          icon: 'error',
+          duration: 2000
+        })
         console.warn('error:', errors);
       }
     });
@@ -207,6 +196,17 @@ const submit = () => {
     })
   }
 };
+const vipShow = () =>{
+  console.log('vipShow',userVip.value )
+  if(String(userVip.value) === '0'){
+    vipVisible.value = true
+    myshow.value = false
+  }
+}
+const vipCancelSynthesis = () =>{
+  console.log( vipVisible.value,' vipVisible.value')
+  vipVisible.value = false
+}
 // 失去焦点校验
 const customBlurValidate = (prop) => {
   formRef.value?.validate(prop).then(({ valid, errors }) => {
@@ -227,6 +227,14 @@ const nameLengthValidator = (val) => {
 };
 /*上传*/
 const uploadImage = async () => {
+  if(userUid.value == null){
+    Taro.showToast({
+      title: '请先登录',
+      icon: 'error',
+      duration: 2000
+    })
+    return;
+  }
   showFlag.value = false;
   material.value = false
   Taro.chooseImage({
@@ -293,6 +301,7 @@ const deleteImage = (index) =>{
 * */
 /*失败提示*/
 import { reactive } from 'vue';
+import VipDilaog from "../../components/Dialog/VipDilaog.vue";
 const state = reactive({
   msg: 'toast',
   type: 'text',
@@ -371,6 +380,14 @@ const siftDate = () =>{
 }
 const material = ref(false);
 const toMaterial = () => {
+  if(userUid.value == null){
+    Taro.showToast({
+      title: '请先登录',
+      icon: 'error',
+      duration: 2000
+    })
+    return;
+  }
   showFlag.value = false
   Taro.navigateTo({
     url: `/pages/Material/index`,
@@ -390,11 +407,15 @@ const getMaterial = () => {
   Taro.removeStorageSync('materialList');
 }
 useDidShow(() => {
+  userUid.value = Taro.getStorageSync('userUid')
   getMaterial()
 })
 const userUid = ref('')
+const userVip = ref('')
 onMounted(()=>{
-  userUid.value = Taro.getStorageSync('userUid')
+  console.log(Taro.getStorageSync('UserVip'))
   siftDate();
+  userVip.value = Taro.getStorageSync('UserVip')
+  console.log(userVip.value, 'userVip')
 })
 </script>

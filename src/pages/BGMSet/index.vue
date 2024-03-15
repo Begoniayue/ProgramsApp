@@ -57,9 +57,10 @@ const playAudio = (url) => {
     audioContext.stop();
   });
 };
+import CryptoJS from 'crypto-js';
 const completeAndBack = () => {
   Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/set_music',
+    url: 'https://vr.justeasy.cn/xcx/pano/set_music',
     method: 'POST',
     header: {
       'content-type': 'application/json'
@@ -67,6 +68,8 @@ const completeAndBack = () => {
     data: {
       panoid: panoid.value,
       music_url: BGMSelected.value,
+      user_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -94,6 +97,8 @@ const getList = () => {
     },
     data: {
       panoid: panoid.value,
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {

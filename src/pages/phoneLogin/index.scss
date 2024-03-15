@@ -80,11 +80,26 @@
   display: flex;
 }
 .agreement{
-  color: #6c6bfc;
+  color: #FD5F00;
 }
 .nut-icon-checked{
-  color: #6c6bfc;
+  color: #FD5F00;
 }
 .nut-checkbox__label{
   display: flex;
+}
+.nut-tabs__list{
+  background: #ffffff;
+}
+.nut-tabs .nut-tabs__titles .nut-tabs__titles-item.active .nut-tabs__titles-item__line{
+  background: #FD5F00;
+  width: 20%;
+  height: 10px;
+  border-radius: 20px;
+}
+.nut-tabs{
+  margin-top: 40px;
+}
+.nut-tab-pane{
+  padding: 0;
 }

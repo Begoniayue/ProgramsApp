@@ -4,20 +4,6 @@
       <image src="../../../images/logo.svg" mode="aspectFit" />
     </view>
     <view class="title">让设计更容易 为设计师赋能</view>
-
-<!-- 手机号   -->
-    <view v-if="String(useAppEnv.currentEnv) === 'TT'">
-      <nut-form class="login-form">
-        <nut-form-item label="+86" prop="phoneNumber">
-          <nut-input v-model="formData.phoneNumber" placeholder="请输入手机号" type="text" />
-        </nut-form-item>
-        <nut-form-item prop="verifyCode">
-          <nut-input v-model="formData.verifyCode" placeholder="请输入验证码" type="text" />
-          <view class="get-code" :disabled="countDown > 0" @click="getCodeButton">{{ countDown > 0 ? `${countDown}秒后重试` : '获取验证码' }}</view>
-        </nut-form-item>
-      </nut-form>
-      <view class="phone-login" @click="login">登录</view>
-    </view>
 <!--  快捷登录  -->
     <view v-if="String(useAppEnv.currentEnv) === 'TT'">
       <view class="quick-title">用其他登录方式</view>
@@ -27,7 +13,8 @@
     </view>
     <view v-if="String(useAppEnv.currentEnv) === 'WEAPP'">
       <view class="container">
-        <view class="phone-login" @click="quickLogin">立即登录</view>
+        <view class="phone-login" @click="quickLogin">微信一键登录/注册</view>
+        <view class="other-login" @click="phoneLogin">其他登录</view>
       </view>
     </view>
     <view class="quick-argen">
@@ -51,7 +38,7 @@ const formData = ref({
 const countDown = ref(0); // 新增倒计时状态
 const agreeMent = ref(false);
 const quickLogin = async () => {
-  if (Taro.getEnv() === Taro.ENV_TYPE.DOUYIN) {
+  if (Taro.getEnv() === Taro.ENV_TYPE.TT) {
     tt.login({
       success: function(res) {
         const { code } = res;
@@ -68,6 +55,9 @@ const quickLogin = async () => {
           Taro.setStorageSync('userUid', uid);
           const userStore = useUserStore();
           userStore.setUserAndPersist(uid);
+          Taro.switchTab({
+            url: '/pages/Home/index'
+          })
         })
         // 进行后续处理，例如发送code到服务器进行验证
       },
@@ -89,20 +79,21 @@ const quickLogin = async () => {
         });
         response.then((res) => {
           const { data, uid } = res.data.data;
-          console.log('登录返回的code：', res.data.data.uid);
-          console.log(uid)
           Taro.setStorageSync('userUid', uid);
           const userStore = useUserStore();
-          userStore.setUserAndPersist(uid);
-          Taro.switchTab({
-            url: '/pages/Home/index'
-          })
+          userStore.setUserAndPersist(uid).then(() => {
+            // 在 setUserAndPersist 完成后切换页面
+            setTimeout(() => {
+              Taro.switchTab({
+                url: '/pages/Home/index'
+              });
+            },2000)
+          });
         })
       }
     })
   }
 }
-
 const login = () => {
   if (!formData.value.phoneNumber) {
     Taro.showToast({ title: '手机号不能为空', icon: 'none', duration: 2000 });
@@ -116,7 +107,7 @@ const login = () => {
     Taro.showToast({ title: '验证码不能为空', icon: 'none', duration: 2000 });
     return false;
   }
-  if (!agreeMent) {
+  if (!agreeMent.value) {
     Taro.showToast({ title: '请勾选下方协议', icon: 'none', duration: 2000 });
     return false;
   }
@@ -190,6 +181,12 @@ async function getCodeRequest() {
 const toAgreeMent = () => {
   Taro.navigateTo({
     url: `/pages/webview/index?url=https://jeapp.justeasy.cn/index/userPolicy.php?version=137`
+  })
+};
+const phoneLogin = () => {
+  console.log('phoneLogin')
+  Taro.navigateTo({
+    url: '/pages/phoneLogin/index'
   })
 };
 </script>

@@ -34,3 +34,8 @@
     }
   }
 }
+.nut-cell__value{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

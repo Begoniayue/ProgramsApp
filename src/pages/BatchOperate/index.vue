@@ -64,6 +64,7 @@
 import './index.scss'
 import { onMounted, ref } from 'vue'
 import Taro  from "@tarojs/taro";
+import CryptoJS from 'crypto-js';
 const state = ref([])
 const dataList = ref([])
 const type = ref('')

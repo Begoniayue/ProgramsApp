@@ -1,13 +1,13 @@
 <template>
   <view>
     <nut-cell-group>
-      <nut-cell title="作品加密" :round-radius="0" :desc="workInfo.pwd_value==='0'? '作品加密':'当前密码：' + workInfo.pwd_value" is-link @click="openWorkEncryptDialog"/>
+      <nut-cell title="作品加密" :round-radius="0" :desc="workInfo.pwd_value === '0'? '作品加密':'当前密码：' + workInfo.pwd_value" is-link @click="openWorkEncryptDialog"/>
     </nut-cell-group>
     <nut-cell-group>
       <nut-cell title="作品标题" round-radius="0" :desc=workInfo.name is-link @click="openEditWorkTitleDialog"/>
       <nut-cell title="全景作者" round-radius="0" :desc="workInfo.author" is-link @click="openEditWorkAuthorDialog"/>
-      <nut-cell title="设计说明" round-radius="0" desc="设计说明" is-link @click="openEditDesignDescDialog"/>
-      <nut-cell title="编辑背景音乐" round-radius="0" desc="music" is-link @click="toSetBGM"/>
+      <nut-cell title="设计说明" round-radius="0" :desc="workInfo.intro" is-link @click="openEditDesignDescDialog"/>
+      <nut-cell title="编辑背景音乐" round-radius="0" :desc="workInfo.music_name" is-link @click="toSetBGM"/>
       <nut-cell round-radius="0" is-link @click="uploadImage">
         <template #title>
           <view style="position: relative">
@@ -32,22 +32,22 @@
     <nut-cell-group>
       <nut-cell title="浏览量" round-radius="0">
         <template #link>
-          <nut-switch :model-value="viewCountFlag" @change="changeViewCountFlag" active-color="#6C6BFC"/>
+          <nut-switch :model-value="workInfo.is_view === '1'" @change="changeViewCountFlag" active-color="#6C6BFC"/>
         </template>
       </nut-cell>
       <nut-cell title="点赞" round-radius="0">
         <template #link>
-          <nut-switch :model-value="likeFlag" @change="changeLikeFlag" active-color="#6C6BFC"/>
+          <nut-switch :model-value="workInfo.is_like === '1'" @change="changeLikeFlag" active-color="#6C6BFC"/>
         </template>
       </nut-cell>
       <nut-cell title="展示场景预览图" round-radius="0">
         <template #link>
-          <nut-switch :model-value="showPreviewFlag" @change="changeShowPreviewFlag" active-color="#6C6BFC"/>
+          <nut-switch :model-value="workInfo.showthumbs === '1'" @change="changeShowPreviewFlag" active-color="#6C6BFC"/>
         </template>
       </nut-cell>
       <nut-cell title="小行星开场" round-radius="0">
         <template #link>
-          <nut-switch :model-value="showAsteroidFlag" @change="changeShowAsteroidFlag" active-color="#6C6BFC"/>
+          <nut-switch :model-value="workInfo.is_planet" @change="changeShowAsteroidFlag" active-color="#6C6BFC"/>
         </template>
       </nut-cell>
       <nut-cell round-radius="0">
@@ -55,10 +55,10 @@
           <view style="position: relative">
             自动旋转
             <view style="position: absolute; right: 5px;top: -5px">
-              <nut-radio-group v-model="rotateSpeed" direction="horizontal" :icon-size="12" class="home-radio">
-                <nut-radio shape="button" label="1" :disabled="!showRotateFlag">快速</nut-radio>
-                <nut-radio shape="button" label="2" :disabled="!showRotateFlag">中速</nut-radio>
-                <nut-radio shape="button" label="3" :disabled="!showRotateFlag">慢速</nut-radio>
+              <nut-radio-group v-model="workInfo.auto_speed" direction="horizontal" :icon-size="12" class="home-radio">
+                <nut-radio shape="button" label="12" :disabled="!showRotateFlag">快速</nut-radio>
+                <nut-radio shape="button" label="8" :disabled="!showRotateFlag">中速</nut-radio>
+                <nut-radio shape="button" label="6" :disabled="!showRotateFlag">慢速</nut-radio>
               </nut-radio-group>
             </view>
           </view>
@@ -93,17 +93,24 @@
       @ok="onDesignDescDialogOk"
       :text="intro"
     />
+    <VipDilaog
+      :dialogVisible="vipVisible"
+      @cancel="vipCancel"
+    />
   </view>
 </template>
 <script setup>
 import {onMounted, ref} from 'vue';
-import Taro from "@tarojs/taro";
+import Taro, {useDidShow} from "@tarojs/taro";
 import './index.scss'
 import DialogWorkEncrypt from './DialogWorkEncrypt.vue'
 import DialogWorkTitle from './DialogWorkTitle.vue'
 import DialogWorkAuthor from './DialogWorkAuthor.vue'
 import DialogDesignDesc from "./DialogDesignDesc.vue";
+import CryptoJS from 'crypto-js';
+import VipDilaog from "../../components/Dialog/VipDilaog.vue";
 const password = ref('')
+const vipVisible = ref(false)
 const title = ref('')
 const author = ref('')
 const intro = ref('')
@@ -113,16 +120,20 @@ const logo = ref('')
 // ----------------------作品加密---------------------
 const dialogVisibleWorkEncrypt = ref(false)
 const openWorkEncryptDialog = () => {
-  dialogVisibleWorkEncrypt.value = true
+  if (vip.value === '0'){
+    vipVisible.value = true
+  }else {
+    dialogVisibleWorkEncrypt.value = true
+  }
 }
 const onWorkEncryptDialogCancel = () => {
   dialogVisibleWorkEncrypt.value = false
 }
 const panoid = ref('')
+const vip = ref('')
 onMounted(()=>{
   panoid.value = Taro.getCurrentInstance().router.params.panoid
-  getInfo()
-  console.log(panoid.value)
+  vip.value = Taro.getCurrentInstance().router.params.UserVip
 })
 const workInfo = ref({})
 const getInfo = () => {
@@ -134,17 +145,20 @@ const getInfo = () => {
     },
     data: {
       panoid: panoid.value,
-          uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
-    if (res.statusCode === 200) {
-      workInfo.value = res.data
+    if (res.data.status === 200) {
+      workInfo.value = res.data.data
       console.log(res.data)
     }
   })
 }
 const onWorkEncryptDialogOk = (val,currentEncryptFlag) => {
+  Taro.showLoading({
+    title: '加载中...',
+  })
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/set_pwd',
     method: 'POST',
@@ -154,14 +168,13 @@ const onWorkEncryptDialogOk = (val,currentEncryptFlag) => {
     data: {
       panoid: panoid.value,
       is_encrypt:currentEncryptFlag,
-      pwd: val
+      pwd: val,
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
     },
   }).then((res) => {
     if (res.statusCode === 200) {
-      Taro.showToast({
-        title: '成功',
-        icon: 'success',
-      })
+     Taro.hideLoading()
     } else {
       throw new Error('Failed to fetch data');
     }
@@ -192,7 +205,7 @@ const onWorkAuthorDialogCancel = () => {
   dialogVisibleWorkAuthor.value = false
 }
 const onWorkAuthorDialogOk = (val) => {
-  workInfo.value.author.value = val
+  workInfo.value.author = val
   changeInfo()
 }
 // ----------------------设计说明---------------------
@@ -203,8 +216,11 @@ const openEditDesignDescDialog = () => {
 const onDesignDescDialogCancel = () => {
   dialogVisibleDesignDesc.value = false
 }
+const vipCancel = () => {
+  vipVisible.value = false
+}
 const onDesignDescDialogOk = (val) => {
-  workInfo.value.intro.value = val
+  workInfo.value.intro = val
   changeInfo()
 }
 // ----------------------背景音乐---------------------
@@ -272,8 +288,8 @@ const changeInfo = (value) => {
       'content-type': 'application/json'
     },
     data: {
-        uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       panoid: panoid.value,
       name:workInfo.value.name,
       author: workInfo.value.author,
@@ -303,8 +319,8 @@ const moreSet = (value) => {
       'content-type': 'application/json'
     },
     data: {
-        uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       type: type.value,
       panoid: panoid.value,
       speed:speed.value,
@@ -316,6 +332,7 @@ const moreSet = (value) => {
         title: '成功',
         icon: 'success',
       })
+      getInfo()
     } else {
       throw new Error('Failed to fetch data');
     }
@@ -408,4 +425,7 @@ const uploadWater = async () => {
     }
   })
 };
+useDidShow(() => {
+  getInfo()
+})
 </script>

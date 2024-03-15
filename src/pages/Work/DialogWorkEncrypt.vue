@@ -1,5 +1,6 @@
 <script setup>
 import {ref, defineEmits} from "vue";
+import Taro from "@tarojs/taro";
 
 const props = defineProps({
   dialogVisible: {
@@ -22,6 +23,12 @@ const onCancel = () => {
   emit('cancel')
 }
 const onOk = () => {
+  if (currentPassword.value === ''){
+    return Taro.showToast({
+      title: '请输入密码',
+      icon: 'none'
+    })
+  }
   emit('ok', currentPassword.value,currentEncryptFlag.value)
   emit('cancel')
 }

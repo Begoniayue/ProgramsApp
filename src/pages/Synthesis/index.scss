@@ -161,10 +161,12 @@
 }
 .upload-tip-content{
   font-weight: 500;
-  font-size: 24px;
+  font-size: 24rpx;
   color: #666666;
-  line-height: 48px;
-  margin-top: 10px;
+  line-height: 48rpx;
+  margin-top: 19rpx;
+  margin-bottom: 50px;
+  height: 270rpx;
 }
 .upload-tip-title{
   font-size: 30px;
@@ -204,4 +206,23 @@
 }
 .set-pop{
   justify-content: center;
+}
+.nut-button--primary:not([disabled]):active{
+  background: #6C6BFC;
+}
+.nut-dialog{
+  .nut-dialog__header{
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .nut-dialog__footer{
+    .nut-dialog__footer-ok{
+      background: #6C6BFC;
+    }
+    .nut-dialog__footer-cancel{
+      background: #FFFFFF;
+      border: 1px solid #6C6BFC;
+      color: #6C6BFC;
+    }
+  }
 }

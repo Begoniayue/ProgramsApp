@@ -2,22 +2,30 @@
   <nut-cell-group>
     <nut-cell title="公开到全景主页" round-radius="0">
       <template #link>
-        <nut-switch :model-value="homeFlag" @change="changehomeFlag" active-color="#6C6BFC"/>
+        <nut-switch :model-value="workInfo.myshow ==='1' " @change="changehomeFlag" active-color="#6C6BFC"/>
       </template>
     </nut-cell>
     <nut-cell title="公开到微官网" round-radius="0">
       <template #link>
-        <nut-switch :model-value="webFlag" @change="changeWebFlag" active-color="#6C6BFC"/>
+        <nut-switch :model-value="workInfo.layer_open ==='1'" @change="changeWebFlag" active-color="#6C6BFC"/>
       </template>
     </nut-cell>
     <nut-cell title="展示微官网图标" round-radius="0">
       <template #link>
-        <nut-switch :model-value="webIconFlag" @change="changeWebIconFlag" active-color="#6C6BFC"/>
+        <nut-switch :model-value="workInfo.isweiicon ==='1'" @change="changeWebIconFlag" active-color="#6C6BFC"/>
       </template>
     </nut-cell>
     <nut-cell title="去除建E网水印" round-radius="0">
       <template #link>
-        <nut-switch :model-value="waterFlag" @change="changeWaterFlag" active-color="#6C6BFC"/>
+        <nut-switch :model-value="workInfo.watermark ==='1'" @change="changeWaterFlag" active-color="#6C6BFC"/>
+      </template>
+    </nut-cell>
+    <nut-cell title="中英文切换" round-radius="0">
+      <template #title>
+        <view v-if="workInfo.is_language ==='1'">当前英文</view>
+      </template>
+      <template #link>
+        <nut-switch :model-value="workInfo.is_language ==='1'" @change="changeWaterFlag" active-color="#6C6BFC"/>
       </template>
     </nut-cell>
   </nut-cell-group>
@@ -31,9 +39,32 @@ const webIconFlag = ref(false)
 const waterFlag = ref(false)
 import { onMounted, ref } from 'vue'
 import Taro  from "@tarojs/taro";
+import CryptoJS from 'crypto-js';
+import './index.scss'
 onMounted(() => {
   panoid.value = Taro.getCurrentInstance().router.params.panoid
+  getInfo()
 })
+const workInfo = ref({})
+const getInfo = () => {
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/get_edit_info',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      panoid: panoid.value,
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+    },
+  }).then((res) => {
+    if (res.data.status === 200) {
+      workInfo.value = res.data.data
+      console.log(res.data)
+    }
+  })
+}
 const changehomeFlag = (value) => {
   homeFlag.value = value
   moreSet('1', value)
@@ -51,6 +82,9 @@ const changeWaterFlag = (value) => {
   moreSet('4', value)
 }
 const moreSet = (value,open) => {
+  Taro.showLoading({
+    title: '加载中...',
+  })
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/set_more',
     method: 'POST',
@@ -58,18 +92,15 @@ const moreSet = (value,open) => {
       'content-type': 'application/json'
     },
     data: {
-        uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
       type: value,
       panoid: panoid.value,
       is_open: open?'1':'0',
     },
   }).then((res) => {
     if (res.statusCode === 200) {
-      Taro.showToast({
-        title: '成功',
-        icon: 'success',
-      })
+      Taro.hideLoading()
     } else {
       throw new Error('Failed to fetch data');
     }
@@ -89,8 +120,8 @@ const deletePano = () => {
               'content-type': 'application/json'
             },
             data: {
-                uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+              uesr_token:Taro.getStorageSync('userUid'),
+              token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
               panoid: panoid.value,
             },
           }).then((res) => {

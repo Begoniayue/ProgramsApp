@@ -2,28 +2,30 @@
   <view class="home-content">
     <view class="home-top-wrap">
       <view class="user-info-container">
-        <view class="avatar-container" v-if="storedUid !== null">
-          <image :src="UserInfo.avatar" class="avatar-img"/>
+        <view class="avatar-container" v-if="storedUid !== null" @click="loginOutFlag = true">
+          <image v-if="UserInfo.avatar!==null" :src="UserInfo.avatar" class="avatar-img"/>
+          <image v-else src="../../../images/icon.jpg" class="avatar-img"/>
         </view>
         <view class="avatar-container-uid" v-else>
           <image src="../../../images/icon.jpg" class="avatar-img"/>
           <view class="open-vip" @click="toLogin">请登录</view>
         </view>
         <view class="info-container" v-if="storedUid !== null">
-          <view class="user-info" v-if="UserVip === '165'">
-           <view class="user-name">{{ UserInfo.username }}</view>
+          <view class="user-info" v-if="UserVip === '0'">
+           <view class="user-name"  @click="loginOutFlag = true">{{ UserInfo.username }}</view>
            <view class="vip-icon"><image src="../../../images/vip.png" /></view>
            <view class="vip-date">(会员到期：{{ UserInfo.all.vip_endtime }})</view>
           </view>
           <view class="user-info" v-else>
-            <view class="user-name">{{ UserInfo.username }}</view>
-            <view class="open-vip">开通全景VIP</view>
+            <view class="user-name" @click="loginOutFlag = true">{{ UserInfo.username }}
+            </view>
+            <view class="open-vip" @click="openVip">开通全景VIP</view>
           </view>
           <!-- 其他用户信息 -->
           <div class="work-capacity">
             <view class="work-text">作品容量：</view>
             <view class="work-count">
-              <view class="work-count-text">{{ UserInfo.history }}</view>
+              <view class="work-count-text">{{ UserInfo.user_pano_nums }}</view>
               <view class="work-count-total">/{{ UserInfo.total }}</view>
               <view class="work-icon" @click="openTips"> <image src="../../../images/ask.png" /></view>
             </view>
@@ -44,7 +46,7 @@
           <!-- 进度条 -->
           <nut-progress
             stroke-color="linear-gradient(270deg, rgba(18,126,255,1) 0%,rgba(174,72,241,1) 32.815625%,rgba(108,107,252,1) 100%)"
-            :percentage="(UserInfo.history/UserInfo.total)*100"
+            :percentage="(Number(UserInfo.user_pano_nums)/UserInfo.total)*100"
             :show-text="false"
             status="active"
             class="progress"
@@ -82,7 +84,7 @@
           </view>
           <view class="item">
             <view class="item-list" v-for="(item, index) in dataList" :key="index">
-              <view class="left-container">
+              <view class="left-container" @click="toPreview(item)">
                 <image :src="item.preview" mode="aspectFit" class="image"></image>
               </view>
               <view class="right-container">
@@ -95,11 +97,11 @@
                 </view>
                 <view class="info-line">
                   <view class="vide-wrap">
-                    <image src="../../../images/video.png" mode="aspectFit" class="icon"></image>
-                    <view class="text">生成短视频</view>
+<!--                    <image src="../../../images/video.png" mode="aspectFit" class="icon"></image>-->
+<!--                    <view class="text">生成短视频</view>-->
                   </view>
                   <view class="right-set">
-                    <view @click="toWorkSetting(item.pano_id)">
+                    <view @click="toWorkSetting(item.pano_id,UserVip)">
                       <image class="icon" src="../../../images/set.png"/>
                     </view>
                     <view @click="toMoreWorkSetting(item.pano_id)">
@@ -133,7 +135,7 @@
           </view>
           <view class="item">
             <view class="item-list" v-for="(item, index) in dataList" :key="index">
-              <view class="left-container">
+              <view class="left-container" @click="toPreview(item)">
                 <image :src="item.preview" mode="aspectFit" class="image"></image>
               </view>
               <view class="right-container">
@@ -150,8 +152,12 @@
 <!--                    <view class="text">生成短视频</view>-->
                   </view>
                   <view class="right-set">
-                    <image class="icon" src="../../../images/set.png"></image>
-                    <image class="icon" src="../../../images/gengduo.png"></image>
+                    <view @click="toWorkSetting(item.pano_id,UserVip)">
+                      <image class="icon" src="../../../images/set.png"/>
+                    </view>
+                    <view @click="toMoreWorkSetting(item.pano_id)">
+                      <image class="icon" src="../../../images/gengduo.png"></image>
+                    </view>
                   </view>
                 </view>
               </view>
@@ -326,45 +332,58 @@
               <view class="share-type" v-else>选择分享方式</view>
             </button>
           </view>
-          <view class="share-item">
+          <view class="share-item" @click="copyLink">
             <view>
               <image src="../../../images/link.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="copyLink">作品链接</view>
+            <view class="share-type" open-type="share">作品链接</view>
           </view>
-          <view class="share-item">
+          <view class="share-item" @click="shareQcode">
             <view>
               <image src="../../../images/code.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="shareQcode">作品二维码</view>
+            <view class="share-type" open-type="share">作品二维码</view>
           </view>
         </view>
 <!--  vip      -->
         <view class="share-title">你还可以选择（部分功能vip）</view>
         <view class="share-wrap">
-          <view class="share-item" @click="showShort = true">
+          <view class="share-item" v-if="UserVip === '0'" @click="vipVisible = true">
             <view>
               <image src="../../../images/cardgreen.png" mode="aspectFit" class="share-icon"></image>
             </view>
             <view class="share-type" open-type="share">临时链接</view>
           </view>
-          <view class="share-item">
+          <view class="share-item" v-else @click="showShort = true">
+            <view>
+              <image src="../../../images/cardgreen.png" mode="aspectFit" class="share-icon"></image>
+            </view>
+            <view class="share-type" open-type="share">临时链接</view>
+          </view>
+          <view class="share-item" v-if="UserVip === '0'" @click="vipVisible = true">
             <view>
               <image src="../../../images/card.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="dialogVisibleWorkEncrypt = true">作品加密</view>
+            <view class="share-type" open-type="share">作品加密</view>
           </view>
-          <view class="share-item">
+          <view class="share-item" v-else @click="dialogVisibleWorkEncrypt = true">
+            <view>
+              <image src="../../../images/card.png" mode="aspectFit" class="share-icon"></image>
+            </view>
+            <view class="share-type" open-type="share">作品加密</view>
+          </view>
+          <view class="share-item"  @click="ToCard">
             <view>
               <image src="../../../images/cardblue.png" mode="aspectFit" class="share-icon"></image>
             </view>
-            <view class="share-type" open-type="share" @click="ToCard">生成卡片</view>
+            <view class="share-type" open-type="share">生成卡片</view>
           </view>
         </view>
       </nut-popup>
       <nut-popup v-model:visible="showSet" position="bottom" :style="{ height: '18%' }">
         <nut-cell class="set-pop">
-          <view @click="referVisible = true">回收站密码</view>
+          <view v-if="UserVip === 165" @click="referVisible = true">回收站密码</view>
+          <view v-else @click="vipVisible = true">回收站密码</view>
         </nut-cell>
         <nut-cell class="set-pop">
           <view @click="visible = true">清空回收站</view>
@@ -396,8 +415,8 @@
       <nut-dialog
           title="是否清空回收站"
           v-model:visible="visible"
-          @cancel="onOk"
-          @ok="onCancel"
+          @cancel="onCancel"
+          @ok="onRecycleOk"
       >
         删除后作品数据清空,无法恢复,请谨慎操作！！！
       </nut-dialog>
@@ -418,21 +437,21 @@
       <nut-dialog
           title="回收站密码"
           v-model:visible="referVisible"
-          @cancel="onOk"
-          @ok="onCancel"
+          @cancel="onCancel"
+          @ok="onRecycleOk"
       >
         <view>
           <nut-radio-group v-model="passwordFlag" direction="horizontal">
             <nut-radio label="1">开启</nut-radio>
-            <nut-radio label="2">关闭</nut-radio>
+            <nut-radio label="0">关闭</nut-radio>
           </nut-radio-group>
-          <nut-input v-if="passwordFlag=== '1'" v-model="password" placeholder="请输入加密密码"/>
+          <nut-input v-if="passwordFlag=== '1'" v-model="recycleWord" placeholder="请输入加密密码"/>
         </view>
       </nut-dialog>
 <!-- 二维码  -->
       <nut-popup v-model:visible="showQcode" :style="{ padding: '30px 50px' }">
          <image :src="qrcode" class="qrcode-img"></image>
-         <view class="save-code" @click="saveImage">保存到相册</view>
+         <view class="save-code" @click="saveImage(qrcode)">保存到相册</view>
       </nut-popup>
 <!-- 临时链接  -->
       <nut-dialog title="临时链接" v-model:visible="showShort" @ok="onSaveShort" >
@@ -470,29 +489,56 @@
       />
 <!-- 生成卡片     -->
       <nut-popup v-model:visible="showCard"  closeable close-icon-position="top-right" round>
+<!--        <view class="card-wrap">-->
+<!--          <view class="card-title">{{ card.title }}</view>-->
+<!--          <view class="card-user">-->
+<!--            <image :src="card.avatar" mode="aspectFit" class="card-user-img"></image>-->
+<!--            {{ card.user_name }}-->
+<!--          </view>-->
+<!--          <view class="card-content">-->
+<!--            <image :src="card.preview" mode="aspectFit" class="card-img"></image>-->
+<!--          </view>-->
+<!--          <view class="card-footer">-->
+<!--            <image :src="card.logo_url" mode="aspectFit" class="card-logo"></image>-->
+<!--            <image :src="card.code_url" mode="aspectFit" class="card-code"></image>-->
+<!--          </view>-->
+<!--        </view>-->
         <view class="card-wrap">
-          <view class="card-title">{{ card.title }}</view>
-          <view class="card-user">
-            <image :src="card.avatar" mode="aspectFit" class="card-user-img"></image>
-            {{ card.user_name }}
-          </view>
-          <view class="card-content">
-            <image :src="card.preview" mode="aspectFit" class="card-img"></image>
-          </view>
-          <view class="card-footer">
-            <image :src="card.logo_url" mode="aspectFit" class="card-logo"></image>
-            <image :src="card.code_url" mode="aspectFit" class="card-code"></image>
-          </view>
+          <image :src="card" mode="aspectFit" class="card-logo"/>
         </view>
-        <view class="save-code" @click="drawAndSave">保存到相册</view>
+        <view class="save-code" @click="saveImage(card)">保存到相册</view>
       </nut-popup>
+      <nut-popup v-model:visible="loginOutFlag" position="bottom" :style="{ height: '10%' }">
+        <view class="card-wrap" @click="loginOut">
+          退出登录
+        </view>
+      </nut-popup>
+      <nut-dialog
+          no-cancel-btn
+          title="回收站密码"
+          v-model:visible="recycleVisible"
+          @ok="onOk"
+      >
+        <view>
+          <nut-input  v-model="recyclePassword" placeholder="请输入加密密码"/>
+        </view>
+      </nut-dialog>
+      <nut-dialog
+          v-model:visible="vipVisible"
+          @ok="openVip"
+          ok-text="立即充值"
+      >
+        <view>
+          该功能为建E全景 VIP 权益开通 VIP 即可使用
+        </view>
+      </nut-dialog>
     </view>
     <canvas ref="canvas" id="myCanvas" canvas-id="myCanvas" style="width: 400px; height:400px"></canvas>
   </view>
 </template>
 <script setup>
 import { useAppEnvStore } from '../../stores/appEnvStore'
-import Taro from '@tarojs/taro';
+import Taro, {useDidShow, useLoad} from '@tarojs/taro';
 import {onMounted, ref} from 'vue';
 import './index.scss'
 import { useShareAppMessage } from '@tarojs/taro'
@@ -500,15 +546,20 @@ import {IconFont} from "@nutui/icons-vue-taro";
 import {list} from "postcss";
 import DialogWorkEncrypt from "../Work/DialogWorkEncrypt.vue";
 import CryptoJS from "crypto-js";
+import {useUserStore} from "../../stores/userStore";
 const qrcode = ref('');
 const showTips = ref(false);
 const visible = ref(false);
 const referVisible = ref(false);
 const referWorkVisible = ref(false);
-const passwordFlag = ref('2');
+const passwordFlag = ref('0');
 const password = ref('');
+const recycleWord = ref('');
 const type = ref('0');
 let showShare = ref(false);
+let recycleVisible = ref(false);
+let vipVisible = ref(false);
+let recyclePassword = ref('');
 const url = ref('https://img12.360buyimg.com/imagetools/jfs/t1/196430/38/8105/14329/60c806a4Ed506298a/e6de9fb7b8490f38.png');
 const useAppEnv = useAppEnvStore();
 /*用户信息*/
@@ -538,9 +589,36 @@ const onCancel = () => {
 const onOk = () => {
   console.log('event ok');
 };
+const onRecycleOk = () => {
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/set_pwd_recycle',
+    method: 'POST',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      pwd: recycleWord.value,
+      open: passwordFlag.value,
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+    },
+  }).then((res) => {
+    if (res.data.status === 200) {
+      Taro.showToast({
+        title:'设置成功'
+      })
+      referVisible.value = false;
+    } else {
+      Taro.showToast({
+        title:res.data.msg
+      })
+      throw new Error('Failed to fetch data');
+    }
+  });
+};
 const onSaveShort = () => {
   Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/get_temp_url',
+    url: 'https://vr.justeasy.cn/xcx/pano/get_temp_url',
     method: 'GET',
     header: {
       'content-type': 'application/json'
@@ -558,13 +636,7 @@ const onSaveShort = () => {
       Taro.setClipboardData({
         data: res.data.data,
         success: function (res) {
-          Taro.getClipboardData({
-            success: function (res) {
-              Taro.showToast({
-                title: '复制成功',
-              })
-            }
-          })
+         console.log('复制成功')
         }
       })
     } else {
@@ -618,13 +690,20 @@ const openTips = () => {
 };
 const shareObject = ref({})
 const shareLink = (item) => {
-  console.log('shareLink')
+  console.log('shareLink',item)
   showShare.value = true;
   shareObject.value = item
 };
-const toWorkSetting = (panoid) => {
+const toWorkSetting = (panoid,UserVip) => {
+  console.log('toWorkSetting',panoid,UserVip.value)
+  console.log('toWorkSetting',panoid,UserVip)
   Taro.navigateTo({
-    url: `/pages/Work/index?panoid=${panoid}`,
+    url: `/pages/Work/index?panoid=${panoid}&UserVip=${UserVip}`,
+  })
+}
+const openVip = () => {
+  Taro.navigateTo({
+    url: `/pages/webview/index?url=https://jeapp.justeasy.cn/vr/rechargeVip.html`,
   })
 }
 const toMoreWorkSetting = (panoid) => {
@@ -659,16 +738,23 @@ useShareAppMessage((res) => {
   }
 })
 const storedUid = ref(null)
-onMounted(() => {
-  console.log('mounted',Taro.getStorageSync('userUid'))
-  if (Taro.getStorageSync('userUid') !== '' ){
-    storedUid.value = Taro.getStorageSync('userUid');
+const userStore = useUserStore();
+
+useDidShow(() => {
+  const userUid = Taro.getStorageSync('userUid');
+  if (userUid !== '') {
+    storedUid.value = userUid;
   }
   getUserInfo();
-  getList()
+  getList();
+  getRecycle()
+  console.log('onLoad')
 })
 /*获取用户信息*/
 const getUserInfo = () => {
+  let finalResult = Taro.getStorageSync('userUid') + 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  let token = CryptoJS.MD5(finalResult).toString()
+  console.log(finalResult,token,'123456') // 输出 'scene1&uid1'
   return  Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_user_info',
     method: 'GET',
@@ -677,13 +763,15 @@ const getUserInfo = () => {
     },
     data: {
       uesr_token:Taro.getStorageSync('userUid'),
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      token: token
     },
   }).then((res) => {
     if (res.statusCode === 200) {
       UserInfo.value = res.data.data;
-      UserVip.value = res.data.data.all.isvip;
+      UserVip.value = res.data.data.is_vip;
       UserInfo.value.username = '建E网235647';
+      /*放入userstore中 并将UserVip的值放到内存*/
+      Taro.setStorageSync('UserVip', UserVip.value);
       // time_format(res.data.data.all.vip_endtime)
       console.log('UserInfo', UserInfo.value,UserVip.value)
     } else {
@@ -711,7 +799,7 @@ function time_format(time) {
 }
 const openInternet = () => {
   Taro.request({
-        url: ' https://vr.justeasy.cn/xcx/pano/get_micro',
+        url: 'https://vr.justeasy.cn/xcx/pano/get_micro',
         method: 'GET',
         header: {
           'content-type': 'application/json'
@@ -722,12 +810,17 @@ const openInternet = () => {
         },
       }
   ).then((res) => {
-    if (res.statusCode === 200) {
+    console.log('res', res.data)
+    if (res.data=== 200) {
       Taro.navigateTo({
         url: `/pages/webview/index?url=${res.data.data.url}`
       })
     } else {
-      throw new Error('Failed to fetch data');
+      Taro.showToast({
+        title: '请先开通微官网',
+        icon: 'none',
+        duration: 2000
+      })
     }
   });
   console.log('openInternet')
@@ -829,7 +922,7 @@ const recycleList = ref([])
 const getRecycle = () => {
   console.log('getRecycle')
   Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/recycle_list',
+    url: 'https://vr.justeasy.cn/xcx/pano/recycle_list',
     method: 'POST',
     header: {
       'content-type': 'application/json'
@@ -843,7 +936,9 @@ const getRecycle = () => {
     }).then((res) => {
       if (res.statusCode === 200) {
         recycleList.value = res.data.data.list;
-        console.log('recycleList',recycleList.value)
+        recycleVisible.value = res.data.data.is_open_layer_pwd === '1'
+        passwordFlag.value = res.data.data.is_open_layer_pwd === '1'
+        console.log('recycleList',recycleList.value,recycleVisible.value)
       } else {
         throw new Error('Failed to fetch data');
       }
@@ -870,20 +965,14 @@ const getSift = () => {
   })
 }
 const copyLink = () =>{
+  console.log('copyLink',shareObject)
   Taro.setClipboardData({
     data: shareObject.value.detail_url,
-    success: function (res) {
-      Taro.getClipboardData({
-        success: function (res) {
-          console.log(res.data) // data
-        }
-      })
-    }
   })
 }
 const shareQcode = () => {
   Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/get_qrcode',
+    url: 'https://vr.justeasy.cn/xcx/pano/get_qrcode',
     method:'GET',
     header: {
       'content-type': 'application/json'
@@ -900,15 +989,26 @@ const shareQcode = () => {
     }
   })
 }
-const saveImage = () =>{
-  Taro.saveImageToPhotosAlbum({
-    filePath: shareObject.value.detail_url,
+const saveImage = (item) =>{
+  Taro.downloadFile({
+    url: item, //仅为示例，并非真实的资源
     success: function (res) {
-      Taro.showToast({
-        title: '保存成功',
-        icon: 'none',
-        duration: 2000
-      })
+      if (res.statusCode === 200) {
+        Taro.saveImageToPhotosAlbum({
+          filePath: res.tempFilePath, // 使用下载得到的临时文件路径字符串
+          success() {
+            console.log('成功保存到相册');
+          },
+          fail(err) {
+            console.error('保存图片到相册失败：', err);
+          }
+        });
+      } else {
+        console.error('下载图片失败');
+      }
+    },
+    fail: function () {
+      console.error('下载图片失败');
     }
   })
 }
@@ -941,7 +1041,7 @@ const card = ref({})
 const ToCard = () =>{
   showCard.value = true
   Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/get_card',
+    url: 'https://vr.justeasy.cn/xcx/pano/get_card',
     method:'GET',
     header: {
       'content-type': 'application/json'
@@ -962,17 +1062,34 @@ const toLogin = () => {
     url: '/pages/Login/index'
   })
 }
+const loginOutFlag = ref(false)
+const loginOut = async () => {
+  try {
+    await Taro.removeStorageSync('userUid');
+    storedUid.value = null
+    loginOutFlag.value = false;
+  } catch (error) {
+    console.error('登出失败', error);
+  }
+}
 const delMaterial = (item) =>{
+  let sceneid = item.sceneid;
+  let userToken = Taro.getStorageSync('userUid');
+  let sortedValues = [sceneid, userToken].sort()
+  let result = sortedValues.join('&')
+  let finalResult = result + 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  let token = CryptoJS.MD5(finalResult).toString()
+  console.log(result,token) // 输出 'scene1&uid1'
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/del_scene',
-    method:'GET',
+    method:'POST',
     header: {
       'content-type': 'application/json'
     },
     data: {
       sceneid: item.sceneid,
       uesr_token:Taro.getStorageSync('userUid'),
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      token: token
     },
   }).then((res) => {
     if (res.data.status === 200) {
@@ -1006,7 +1123,7 @@ const ondelOk = (item) =>{
 }
 const referWork = (item) => {
   Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/reset_recycle',
+    url: 'https://vr.justeasy.cn/xcx/pano/reset_recycle',
     method:'POST',
     header: {
       'content-type': 'application/json'
@@ -1052,7 +1169,7 @@ function drawPoster() {
 function saveToAlbum(tempFilePath) {
   return new Promise((resolve, reject) => {
     Taro.saveImageToPhotosAlbum({
-      filePath: tempFilePath,
+      filePath: card.value,
       success: () => resolve(),
       fail: err => reject(err),
     });
@@ -1079,5 +1196,10 @@ function saveToCard() {
       fail: err => reject(err),
     });
   });
+}
+const toPreview = (item) => {
+  Taro.navigateTo({
+    url: `/pages/webview/index?url=${item.detail_url}`
+  })
 }
 </script>

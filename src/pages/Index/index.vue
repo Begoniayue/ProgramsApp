@@ -9,13 +9,16 @@
       class="home-swiper"
     >
       <nut-swiper-item v-for="(item, index) in sliderList" :key="index" style="height: 180px">
-         <image :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
+        <view @click="toUrlLink(item.url)">
+          <image :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
+
+        </view>
       </nut-swiper-item>
     </nut-swiper>
     <!--主体内容-->
     <view class="home-content">
       <view class="home-search-wrap">
-        <nut-searchbar v-model="searchValue" placeholder="搜索全景关键词">
+        <nut-searchbar v-model="searchValue" placeholder="搜索全景关键词" :confirm-type="'search'" @search="listInit">
           <template #rightout>
             <view class="icon" @click="showRight = true">
               <image
@@ -122,6 +125,11 @@ const getUrlLink = (item) => {
     url: `/pages/webview/index?url=${item.work_url}`
   })
 };
+const toUrlLink = (url) => {
+  Taro.navigateTo({
+    url: `/pages/webview/index?url=${url}`
+  })
+};
 /* 接口请求*/
 const getDate = () =>{
   return Taro.request({
@@ -155,8 +163,8 @@ const listInit = async (pageNumber) => {
       smallcate:smallcate.value,
       bigcate:bigcate.value,
       keywords:searchValue.value,
-        uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+      uesr_token:Taro.getStorageSync('userUid'),
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
     }
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -167,7 +175,7 @@ const listInit = async (pageNumber) => {
     }
   });
 };
-
+import CryptoJS from 'crypto-js';
 const loadMoreData = async () => {
   if (loading.value) return;
   try {
@@ -219,6 +227,13 @@ const Sure = () => {
   listInit()
 };
 const Collection = (id) => {
+  if(Taro.getStorageSync('userUid') ==null){
+    Taro.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 2000
+    })
+  }
   Taro.request({
     url: ' https://vr.justeasy.cn/xcx/pano/set_like',
     method: 'GET',
@@ -227,7 +242,8 @@ const Collection = (id) => {
     },
     data: {
       pano_id: id,
-      uid: '39',
+      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+      uesr_token:Taro.getStorageSync('userUid')
     }
   }).then((res) => {
     if (res.statusCode === 200) {

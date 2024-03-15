@@ -9,7 +9,8 @@ export default {
     'pages/BGMSet/index',
     'pages/BatchOperate/index',
     'pages/Login/index',
-    'pages/Material/index'
+    'pages/Material/index',
+    'pages/phoneLogin/index'
   ],
   window: {
     backgroundTextStyle: 'light',
