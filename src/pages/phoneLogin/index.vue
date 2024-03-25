@@ -20,7 +20,7 @@
         </view></nut-tab-pane>
         <nut-tab-pane title="账号登录" pane-key="2">
           <nut-form class="login-form">
-            <nut-form-item label="+86" prop="phoneNumber">
+            <nut-form-item prop="phoneNumber">
               <nut-input v-model="formDataAccount.account" placeholder="用户名/手机号/邮箱" type="text" />
             </nut-form-item>
             <nut-form-item prop="verifyCode">
@@ -37,7 +37,7 @@
       </nut-tabs>
     </view>
     <view class="quick-argen">
-      <nut-checkbox v-model="agreeMent"> 我已阅读并同意<view class="agreement" @click="toAgreeMent">用户协议</view> </nut-checkbox>
+      <nut-checkbox v-model="agreeMentAccount"> 我已阅读并同意<view class="agreement" @click="toAgreeMent">用户协议</view> </nut-checkbox>
     </view>
   </view>
 </template>
@@ -51,6 +51,7 @@ const value = ref('1');
 const phoneNumber = ref('');
 const verificationCode = ref('');
 import './index.scss'
+import generateAndEncryptToken from "../../util/sort";
 const formData = ref({
   phoneNumber: '',
   verifyCode: '',
@@ -61,6 +62,7 @@ const formDataAccount = ref({
 });
 const countDown = ref(0); // 新增倒计时状态
 const agreeMent = ref(false);
+const agreeMentAccount = ref(false);
 
 const login = (type) => {
   if (type === 'phone') {
@@ -76,7 +78,7 @@ const login = (type) => {
       Taro.showToast({ title: '验证码不能为空', icon: 'none', duration: 2000 });
       return false;
     }
-    if (!agreeMent.value) {
+    if (!agreeMentAccount.value) {
       Taro.showToast({ title: '请勾选下方协议', icon: 'none', duration: 2000 });
       return false;
     }
@@ -88,6 +90,10 @@ const login = (type) => {
     }
     if (!formDataAccount.value.password) {
       Taro.showToast({ title: '密码码不能为空', icon: 'none', duration: 2000 });
+      return false;
+    }
+    if (!agreeMentAccount.value) {
+      Taro.showToast({ title: '请勾选下方协议', icon: 'none', duration: 2000 });
       return false;
     }
     // 账号
@@ -104,18 +110,27 @@ const getSubmitLogin = () => {
       code: formData.value.verifyCode,
     },
     success: (res) => {
-      const userStore = useUserStore();
-      userStore.setUserAndPersist(res.data);
-      Taro.setStorageSync('userUid', res.data.uid);
-      Taro.showToast({
-        title: '登录成功',
-        icon: 'none',
-        duration: 2000,
-      });
-      // 登录成功后可以跳转到其他页面
-      Taro.navigateTo({
-        url: '/pages/Home/index',
-      });
+      console.log(res.data.status)
+      if (res.data.status === 200){
+        const userStore = useUserStore();
+        userStore.setUserAndPersist(res.data);
+        Taro.setStorageSync('userUid', res.data.data.uid);
+        Taro.showToast({
+          title: '登录成功',
+          icon: 'none',
+          duration: 2000,
+        });
+        // 登录成功后可以跳转到其他页面
+        Taro.switchTab({
+          url: '/pages/Home/index'
+        });
+      }else {
+        Taro.showToast({
+          title: '账号密码错误',
+          icon: 'none',
+          duration: 2000,
+        });
+      }
     },
     fail: (error) => {
       console.error('登录失败：', error);
@@ -123,27 +138,44 @@ const getSubmitLogin = () => {
   });
 }
 const toSubmitLogin = () => {
+  const data = {
+    username: formDataAccount.value.account,
+    password: CryptoJS.MD5(formDataAccount.value.password).toString(),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
+  console.log(formDataAccount.value.password,'password')
   // 登录逻辑，可以调用后端接口实现
   Taro.request({
-    url: 'https://vr.justeasy.cn/xcx/login/phonelogin',
+    url: 'https://vr.justeasy.cn/xcx/login/loginin',
     method: 'GET',
     data: {
       username: formDataAccount.value.account,
-      code: formDataAccount.value.password,
+      password: CryptoJS.MD5(formDataAccount.value.password).toString(),
+      token:encryptedToken
     },
     success: (res) => {
-      const userStore = useUserStore();
-      userStore.setUserAndPersist(res.data);
-      Taro.setStorageSync('userUid', res.data.uid);
-      Taro.showToast({
-        title: '登录成功',
-        icon: 'none',
-        duration: 2000,
-      });
-      // 登录成功后可以跳转到其他页面
-      Taro.navigateTo({
-        url: '/pages/Home/index',
-      });
+      console.log(res.data.status)
+      if (res.data.status === 200){
+        const userStore = useUserStore();
+        userStore.setUserAndPersist(res.data);
+        Taro.setStorageSync('userUid', res.data.data.uid);
+        Taro.showToast({
+          title: '登录成功',
+          icon: 'none',
+          duration: 2000,
+        });
+        // 登录成功后可以跳转到其他页面
+        Taro.switchTab({
+          url: '/pages/Home/index'
+        });
+      }else {
+        Taro.showToast({
+          title: '账号密码错误',
+          icon: 'none',
+          duration: 2000,
+        });
+      }
     },
     fail: (error) => {
       console.error('登录失败：', error);

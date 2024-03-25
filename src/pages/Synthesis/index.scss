@@ -90,6 +90,40 @@
     background-repeat: no-repeat;
     background-position: right bottom;
     background-size: 40px;
+    z-index: 99;
+    &::after{
+      background: none;
+    }
+  }
+}
+.publish-box-vip{
+  display: flex;
+  padding-left: 20px;
+  .nut-checkbox{
+    width: 300px;
+    height: 70px;
+    text-align: center;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    background: #F8F8F8;
+    margin-right: 20px;
+  }
+  .nut-checkbox__button--active{
+    width: 300px;
+    height: 70px;
+    border-radius: 8px;
+    text-align: center;
+    color: #6C6BFC;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #6C6BFC;
+    background-image: url("../../../images/gou.png");
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: 40px;
+    z-index: 99;
     &::after{
       background: none;
     }
@@ -133,7 +167,7 @@
 .upload-box{
   display: block;
   .nut-form-item__label{
-    padding-left: 30px;
+    padding-left: 20px;
   }
 }
 .upload-img-icon{
@@ -144,7 +178,7 @@
   border: 1px solid #6C6BFC;
   text-align: center;
   image{
-    width: 120px;
+    width: 70px;
     height: 120px;
   }
 }
@@ -193,7 +227,12 @@
 }
 .publish-wrap{
   .nut-form-item__label{
-     padding-left: 60px;
+     padding-left: 62px;
+   }
+}
+.publish-wrap-water{
+  .nut-form-item__label{
+     padding-left: 22px;
    }
 }
 .upload-btn{
@@ -203,6 +242,7 @@
 .upload-tip{
   padding: 20px;
   line-height: 45px;
+  padding-left: 40px;
 }
 .set-pop{
   justify-content: center;

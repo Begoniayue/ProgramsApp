@@ -24,6 +24,9 @@
   .nut-radio{
     margin-left: 20px;
     margin-bottom: 20px;
+    width: 128px;
+    height: 60px;
+    padding: 0px;
     .nut-radio__button--active{
       border: 2px solid #6C6BFC;
       color: #6c6bfc;
@@ -38,4 +41,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.nut-cell__link{
+  color: #e2e2e2;
+  font-size: 24px;
+}
+.logo-image image{
+  height: 50px;
+  margin: 0 auto;
+}
+.logo-image{
+  position: absolute;
+  right: -200px;
+  top: -8px;
+}
+.vip-icon{
+  position: absolute;
+  top: -120rpx;
+  width: 40rpx;
+  left: 50px;
 }

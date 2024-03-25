@@ -6,9 +6,9 @@
     <view class="title">让设计更容易 为设计师赋能</view>
 <!--  快捷登录  -->
     <view v-if="String(useAppEnv.currentEnv) === 'TT'">
-      <view class="quick-title">用其他登录方式</view>
       <view class="container">
         <view class="quick-login" @click="quickLogin">抖音登录</view>
+        <view class="other-login" @click="phoneLogin">其他登录</view>
       </view>
     </view>
     <view v-if="String(useAppEnv.currentEnv) === 'WEAPP'">
@@ -38,6 +38,10 @@ const formData = ref({
 const countDown = ref(0); // 新增倒计时状态
 const agreeMent = ref(false);
 const quickLogin = async () => {
+  if (!agreeMent.value) {
+    await Taro.showToast({title: '请勾选下方协议', icon: 'none', duration: 2000});
+    return false;
+  }
   if (Taro.getEnv() === Taro.ENV_TYPE.TT) {
     tt.login({
       success: function(res) {

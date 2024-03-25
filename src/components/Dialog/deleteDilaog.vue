@@ -1,5 +1,6 @@
 <script setup>
-import {ref, defineEmits, watch} from "vue";
+import {ref, defineEmits} from "vue";
+import Taro from "@tarojs/taro";
 
 const props = defineProps({
   dialogVisible: {
@@ -14,21 +15,22 @@ const props = defineProps({
 const currentText = ref(props.text)
 const emit = defineEmits(['cancel', 'ok'])
 const onCancel = () => {
+  console.log('取消')
   emit('cancel')
 }
 const onOk = () => {
-  emit('ok', currentText.value)
-  emit('cancel')
+  emit('ok')
 }
-watch(() => props.text, (newTitle) => {
-  currentText.value = newTitle;
-});
 </script>
 
 <template>
-  <nut-dialog title="全景作者" :visible="props.dialogVisible" @cancel="onCancel" @ok="onOk">
+  <nut-dialog
+      :visible="props.dialogVisible"
+      @ok="onOk"
+      @cancel="onCancel"
+  >
     <view>
-      <nut-input v-model="currentText" placeholder="请输入全景作者"/>
+      会员删除作品将在回收站保留30天，非会员保留15天
     </view>
   </nut-dialog>
 </template>

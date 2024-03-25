@@ -2,18 +2,21 @@
   <view @click="completeAndBack"  class="share-text">保存</view>
   <view class="content">
     <nut-tabs v-model="state.tabvalue" title-scroll title-gutter="10" name="tabName" direction="vertical">
-      <nut-tab-pane  v-for="item in musicList" :title="item.cate_name" :pane-key="item" :key="item" >
+      <nut-tab-pane  v-for="item in musicList" :title="item.cate_name" :pane-key="item.cate_id" :key="item" >
         <scroll-view style="height: 100vh;flex: 1" scroll-y="true">
           <view class="list-content">
             <nut-radio-group v-model="BGMSelected" text-position="left">
-              <nut-radio  v-for="music in item.music_list" :label="music.music_url">
-                <view @click="playAudio(music.music_url)">
-                  <IconFont name="play-start"  color="#6C6BFC"></IconFont>
-                  {{ music.music_name }}
-                </view>
-                <template #icon></template>
-                <template #checkedIcon> <IconFont name="checked"  color="#6C6BFC"></IconFont></template>
-              </nut-radio>
+              <view   v-for="music in item.music_list" :key="music.music_name">
+                <nut-radio :label="music.music_url">
+                  <!--                -->
+                  <view @click="playAudio(music.music_url)">
+                    <IconFont name="play-start"  color="#6C6BFC"></IconFont>
+                    {{ music.music_name }}
+                  </view>
+                  <template #icon></template>
+                  <template #checkedIcon> <IconFont name="checked"  color="#6C6BFC"></IconFont></template>
+                </nut-radio>
+              </view>
             </nut-radio-group>
           </view>
         </scroll-view>
@@ -27,20 +30,20 @@
 </template>
 
 <script setup>
-import Taro from '@tarojs/taro';
+import Taro, {useDidShow} from '@tarojs/taro';
 import './index.scss'
 import {onMounted, reactive, ref} from 'vue';
 import {IconFont} from "@nutui/icons-vue-taro";
 
 const state = reactive({
-  tabvalue: '0',
+  tabvalue: '589',
   list5: Array.from(new Array(2).keys()),
   count: Array.from(new Array(100).keys())
-
 });
 const BGMSelected = ref('');
 const playId = ref()
 const playAudio = (url) => {
+  console.log(url)
   // 创建音频上下文
   const audioContext = Taro.createInnerAudioContext();
 
@@ -58,7 +61,15 @@ const playAudio = (url) => {
   });
 };
 import CryptoJS from 'crypto-js';
+import generateAndEncryptToken from "../../util/sort";
 const completeAndBack = () => {
+  const data = {
+    panoid: panoid.value,
+    music_url: BGMSelected.value,
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/set_music',
     method: 'POST',
@@ -66,10 +77,8 @@ const completeAndBack = () => {
       'content-type': 'application/json'
     },
     data: {
-      panoid: panoid.value,
-      music_url: BGMSelected.value,
-      user_token:Taro.getStorageSync('userUid'),
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      ...data,
+      token: encryptedToken
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -83,12 +92,18 @@ const completeAndBack = () => {
   });
 }
 const panoid = ref('')
-onMounted(()=>{
+useDidShow(()=>{
   panoid.value = Taro.getCurrentInstance().router.params.panoid
   getList()
 })
 const musicList = ref([])
 const getList = () => {
+  const data = {
+    panoid: panoid.value,
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_music_list',
     method: 'GET',
@@ -96,9 +111,8 @@ const getList = () => {
       'content-type': 'application/json'
     },
     data: {
-      panoid: panoid.value,
-      uesr_token:Taro.getStorageSync('userUid'),
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      ...data,
+      token: encryptedToken
     },
   }).then((res) => {
     if (res.statusCode === 200) {

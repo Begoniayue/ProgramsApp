@@ -1,7 +1,7 @@
 {
   "disablePrivate": true,
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "bigPackageSizeSupport": true,
     "compileHotReLoad": true
   },

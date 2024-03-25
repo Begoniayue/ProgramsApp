@@ -1,5 +1,5 @@
 <script setup>
-import {ref, defineEmits} from "vue";
+import {ref, defineEmits, watch} from "vue";
 
 const props = defineProps({
   dialogVisible: {
@@ -20,6 +20,9 @@ const onOk = () => {
   emit('ok', currentText.value)
   emit('cancel')
 }
+watch(() => props.text, (newTitle) => {
+  currentText.value = newTitle;
+});
 </script>
 
 <template>

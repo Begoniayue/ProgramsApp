@@ -7,12 +7,13 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    NutBacktop: typeof import('@nutui/nutui-taro')['Backtop']
+    DeleteDilaog: typeof import('./src/components/Dialog/deleteDilaog.vue')['default']
+    Group: typeof import('./src/components/Dialog/Group.vue')['default']
+    LoginTipDaliog: typeof import('./src/components/Dialog/LoginTipDaliog.vue')['default']
     NutButton: typeof import('@nutui/nutui-taro')['Button']
     NutCell: typeof import('@nutui/nutui-taro')['Cell']
     NutCellGroup: typeof import('@nutui/nutui-taro')['CellGroup']
     NutCheckbox: typeof import('@nutui/nutui-taro')['Checkbox']
-    NutCheckboxGroup: typeof import('@nutui/nutui-taro')['CheckboxGroup']
     NutDialog: typeof import('@nutui/nutui-taro')['Dialog']
     NutForm: typeof import('@nutui/nutui-taro')['Form']
     NutFormItem: typeof import('@nutui/nutui-taro')['FormItem']
@@ -24,12 +25,9 @@ declare module 'vue' {
     NutRadio: typeof import('@nutui/nutui-taro')['Radio']
     NutRadioGroup: typeof import('@nutui/nutui-taro')['RadioGroup']
     NutSearchbar: typeof import('@nutui/nutui-taro')['Searchbar']
-    NutSwiper: typeof import('@nutui/nutui-taro')['Swiper']
-    NutSwiperItem: typeof import('@nutui/nutui-taro')['SwiperItem']
     NutSwitch: typeof import('@nutui/nutui-taro')['Switch']
     NutTabPane: typeof import('@nutui/nutui-taro')['TabPane']
     NutTabs: typeof import('@nutui/nutui-taro')['Tabs']
-    NutTextarea: typeof import('@nutui/nutui-taro')['Textarea']
     Search: typeof import('./src/components/search/search.vue')['default']
     Tabbar: typeof import('./src/components/tab-bar/tabbar.vue')['default']
     VipDilaog: typeof import('./src/components/Dialog/VipDilaog.vue')['default']

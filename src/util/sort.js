@@ -14,7 +14,7 @@ function generateAndEncryptToken(data, secret) {
   }
 
   const queryString = generateQueryString(data);
-  console.log(queryString);
+  console.log(queryString,'queryString');
   const encryptedToken = CryptoJS.MD5(queryString + secret).toString();
   return encryptedToken;
 }

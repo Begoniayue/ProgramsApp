@@ -12,3 +12,28 @@
   margin: 0 auto;
   margin-top: 40px;
 }
+.nut-dialog{
+  .nut-dialog__header{
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .nut-dialog__footer{
+    .nut-dialog__footer-ok{
+      background: #6C6BFC;
+    }
+    .nut-dialog__footer-cancel{
+      background: #FFFFFF;
+      border: 1px solid #6C6BFC;
+      color: #6C6BFC;
+    }
+  }
+}
+.nut-cell__value{
+  padding-right: 10px;
+}
+.vip-icon{
+  position: absolute;
+  top: -120rpx;
+  width: 40rpx;
+  left: 80px;
+}

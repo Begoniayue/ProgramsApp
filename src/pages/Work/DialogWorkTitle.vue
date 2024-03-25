@@ -1,25 +1,36 @@
 <script setup>
-import {ref, defineEmits} from "vue";
+import {ref, defineEmits,watch} from "vue";
+import Taro from "@tarojs/taro";
 
 const props = defineProps({
   dialogVisible: {
     type: Boolean,
     default: false
   },
-  text: {
+  title: {
     type: String,
     default: ''
   },
 })
-const currentText = ref(props.text)
+const currentText = ref(props.title)
 const emit = defineEmits(['cancel', 'ok'])
 const onCancel = () => {
   emit('cancel')
 }
 const onOk = () => {
+  if (currentText.value === ''){
+    return Taro.showToast({
+      title: '作品标题不能为空',
+      icon: 'none',
+      duration: 2000
+    })
+  }
   emit('ok', currentText.value)
   emit('cancel')
 }
+watch(() => props.title, (newTitle) => {
+  currentText.value = newTitle;
+});
 </script>
 
 <template>

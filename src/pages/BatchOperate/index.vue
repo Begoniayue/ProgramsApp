@@ -32,7 +32,7 @@
     <nut-dialog v-model:visible="showSift" title="移动至新分组" @ok="SiftonOk" class="sift-dailog">
       <view class="check-wrap">
         <nut-radio-group v-model="groupid" class="home-radio">
-          <nut-radio :label="item.groupid" shape="button" v-for="item in siftList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
+          <nut-radio v-for="item in siftList" :label="item.groupid" shape="button" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
         </nut-radio-group>
       </view>
     </nut-dialog>
@@ -42,29 +42,16 @@
         v-model:visible="delVisible"
         @ok="delOk"
     >
-      删除后作品可在回收站保留15日会员可保留30日
-    </nut-dialog>
-    <nut-dialog
-        title="回收站密码"
-        v-model:visible="referVisible"
-        @cancel="onOk"
-        @ok="onCancel"
-    >
-      <view>
-        <nut-radio-group v-model="passwordFlag" direction="horizontal">
-          <nut-radio label="1">开启</nut-radio>
-          <nut-radio label="2">关闭</nut-radio>
-        </nut-radio-group>
-        <nut-input v-if="passwordFlag=== '1'" v-model="password" placeholder="请输入加密密码"/>
-      </view>
+      会员删除作品将在回收站保留30天，非会员保留15天
     </nut-dialog>
   </view>
 </template>
 <script setup>
 import './index.scss'
 import { onMounted, ref } from 'vue'
-import Taro  from "@tarojs/taro";
+import Taro, {useDidShow} from "@tarojs/taro";
 import CryptoJS from 'crypto-js';
+import generateAndEncryptToken from "../../util/sort";
 const state = ref([])
 const dataList = ref([])
 const type = ref('')
@@ -76,12 +63,22 @@ const group = ref(null);
 const toggle = ref(true)
 const showSift = ref(false)
 const delVisible = ref(false)
-onMounted(() => {
+useDidShow(() => {
   type.value = Taro.getCurrentInstance().router.params.type
   getList()
   console.log(dataList.value)
 })
 const getList = () => {
+  const data = {
+    page: page.value,
+    page_size: page_size.value,
+    groupid: groupid.value,
+    sort: sort.value,
+    type: type.value,
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
   console.log('getList')
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_my_pano_list',
@@ -90,13 +87,8 @@ const getList = () => {
       'content-type': 'application/json'
     },
     data: {
-      page: page.value,
-      page_size: page_size.value,
-      groupid: groupid.value,
-      sort: sort.value,
-      type: type.value,
-      uesr_token:Taro.getStorageSync('userUid'),
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      ...data,
+      token: encryptedToken
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -113,7 +105,11 @@ const toggleAll = (f) => {
 };
 const siftList = ref([])
 const getSift = () => {
-  console.log('getSift')
+  const data = {
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_group',
     method: 'POST',
@@ -121,8 +117,8 @@ const getSift = () => {
       'content-type': 'application/json'
     },
     data: {
-          uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      uesr_token:Taro.getStorageSync('userUid'),
+    token: encryptedToken
     },
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -132,27 +128,42 @@ const getSift = () => {
   })
 }
 const SiftonOk = () => {
+  const data = {
+    group_id:groupid.value,
+    ids: state.value.join(','),
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
   Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/move_batch',
+    url: 'https://vr.justeasy.cn/xcx/pano/move_batch',
     method: 'GET',
     header: {
       'content-type': 'application/json'
     },
     data: {
-      ids: state.value.join(','),
-          uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
-      group_id:groupid.value
+    ...data,
+    token: encryptedToken,
     },
   }).then((res) => {
     if (res.statusCode === 200) {
       state.value = []
       group.value = '';
-      getList()
+      toggle.value = true
+      Taro.showToast({
+        title: '移动成功',
+      });
+      // getList()
     }
   })
 };
 const delOk = () => {
+  const data = {
+    ids: state.value.join(','),
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/del_batch',
     method: 'GET',
@@ -160,9 +171,8 @@ const delOk = () => {
       'content-type': 'application/json'
     },
     data: {
-      ids: state.value.join(','),
-          uesr_token:Taro.getStorageSync('userUid'),
-    token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString()
+      ...data,
+      token:encryptedToken
     },
   }).then((res) => {
     if (res.statusCode === 200) {

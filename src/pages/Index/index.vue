@@ -8,17 +8,16 @@
       pagination-unselected-color="#F6F6F6"
       class="home-swiper"
     >
-      <nut-swiper-item v-for="(item, index) in sliderList" :key="index" style="height: 180px">
+      <nut-swiper-item v-for="(item, index) in sliderList" :key="index">
         <view @click="toUrlLink(item.url)">
-          <image :src="item.pic" alt="" style="height: 100%; width: 100%" draggable="false" />
-
+          <view><image :src="item.pic" style="width: 100%;height:150px"/></view>
         </view>
       </nut-swiper-item>
     </nut-swiper>
     <!--主体内容-->
     <view class="home-content">
       <view class="home-search-wrap">
-        <nut-searchbar v-model="searchValue" placeholder="搜索全景关键词" :confirm-type="'search'" @search="listInit">
+        <nut-searchbar v-model="searchValue" placeholder="搜索全景关键词" :confirm-type="'search'" @search="listSearch">
           <template #rightout>
             <view class="icon" @click="showRight = true">
               <image
@@ -32,30 +31,18 @@
           </template>
         </nut-searchbar>
       </view>
-      <nut-popup v-model:visible="showRight" position="right" :style="{ width: '75%', height: '100%' }">
-        <view class="check-wrap">
-          <view class="check-title">空间分类 </view>
-            <nut-radio-group v-model="bigcate" class="home-radio">
-              <nut-radio :label="item.id" shape="button" v-for="item in bigcateList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
-            </nut-radio-group>
-          <view class="check-title">风格分类 </view>
-          <nut-radio-group v-model="smallcate" class="home-radio">
-            <nut-radio :label="item.id" shape="button" v-for="item in smallcateList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
-          </nut-radio-group>
-        </view>
-        <view class="check-btn">
-          <nut-button type="primary" @click="Reset" class="reset">重置</nut-button>
-          <nut-button type="primary" @click="Sure" class="sure">确定</nut-button>
-        </view>
-      </nut-popup>
-      <view class="scroll-container" @scrolltolower="onReachBottom">
-        <nut-backtop height="calc(100vh - 10px)">
-          <template #content>
-            <view>
-              <nut-tabs v-model="tabValue" class="home-tabs" @click="tabClick">
-                <nut-tab-pane :title="item.name" :pane-key="item.id" class="list_box" v-for="item in typeList" :key="item.id">
+      <view>
+<!--        <view :class="fixed ? 'fix' : ''  ">12356</view>-->
+<!--        <template #titles>-->
+<!--          <div v-for="item in typeList" :key="item.id" :class="fixed?'fixed':''" @click="type = item.paneKey">-->
+<!--            {{ item.name }}-->
+<!--          </div>-->
+<!--        </template>-->
+          <nut-tabs v-model="tabValue" class="home-tabs" @click="tabClick">
+              <nut-tab-pane :title="item.name" :pane-key="item.id" class="list_box" v-for="item in typeList" :key="item.id">
+                <view  v-if="dataList.length>0" class="list-item">
                   <view class="item" v-for="item in dataList" :key="item.id">
-                    <view class="list" >
+                    <view class="list">
                       <view class="list_pic" @click="getUrlLink(item)">
                         <view class="pic"><image :src="item.preview_url"/></view>
                       </view>
@@ -64,29 +51,52 @@
                         <view class="item-description-text">
                           {{ item.username }}
                         </view>
-                        <view class="item-thumb" @click="Collection(item.id)" v-if="item.is_like == 0">
-                          <image src="../../../images/tuijian.png" class="item-count-icon"/>
-                          <view class="item-count">{{ item.like_num }}</view>
+                        <view class="item-thumb" @click="Collection(item)">
+                          <image src="../../../images/tuijian.png" class="item-count-icon" v-if="item.is_like !== 1"/>
+                          <image src="../../../images/tuicolor.png" class="item-count-icon" v-else/>
+                          <view class="item-count" :style="{ color: item.is_like === 1 ? '#6C6BFC' : '' }">{{ item.like_num }}</view>
                         </view>
-                        <view class="item-thumb" @click="unableCollection()" v-else>
-                          <image src="../../../images/tuicolor.png" class="item-count-icon"/>
-                          <view class="item-count color">{{ item.like_num }}</view>
-                        </view>
+                        <!--                      <view class="item-thumb" @click="unableCollection()" v-else>-->
+                        <!--                        <image src="../../../images/tuicolor.png" class="item-count-icon"/>-->
+                        <!--                        <view class="item-count color">{{ item.like_num }}</view>-->
+                        <!--                      </view>-->
                       </view>
                     </view>
                   </view>
-                </nut-tab-pane>
-              </nut-tabs>
-            </view>
-          </template>
-        </nut-backtop>
+                </view>
+
+                <view v-else>
+                  <image class="empty" src="../../../images/empty.svg" mode="aspectFit" style="margin: 0 auto;"></image>
+                  <view style="font-size: 24rpx;text-align: center">暂无数据~</view>
+                </view>
+              </nut-tab-pane>
+            </nut-tabs>
       </view>
     </view>
+    <view @click="handleBackToTop">
+      <image src="../../../images/zhiding.svg" mode="aspectFit" class="back-icon"></image>
+    </view>
   </view>
+  <nut-popup v-model:visible="showRight" position="right" :style="{ width: '75%', height: '100%' }">
+    <view class="check-wrap">
+      <view class="check-title">空间分类 </view>
+      <nut-radio-group v-model="bigcate" class="home-radio">
+        <nut-radio :label="item.id" shape="button" v-for="item in bigcateList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
+      </nut-radio-group>
+      <view class="check-title">风格分类 </view>
+      <nut-radio-group v-model="smallcate" class="home-radio">
+        <nut-radio :label="item.id" shape="button" v-for="item in smallcateList" :key="item.id" class="readio-btn">{{ item.name }}</nut-radio>
+      </nut-radio-group>
+    </view>
+    <view class="check-btn">
+      <nut-button type="primary" @click="Reset" class="reset">重置</nut-button>
+      <nut-button type="primary" @click="Sure" class="sure">确定</nut-button>
+    </view>
+  </nut-popup>
 </template>
 
 <script setup>
-import Taro from "@tarojs/taro";
+import Taro, {useDidShow,usePageScroll} from "@tarojs/taro";
 import { usePullDownRefresh, useReachBottom } from '@tarojs/taro'
 import { getSlider } from '../../service/home';
 /*获取环境变量*/
@@ -114,8 +124,12 @@ const showRight = ref(false);
 const tabValue = ref('6');
 const useAppEnv = useAppEnvStore();
 
-onMounted(() => {
+useDidShow(() => {
   useAppEnv.init()
+  page.value = 1
+  searchValue.value = ''
+  dataList.value = [];
+  listInit()
   getDate()
   siftDate()
 })
@@ -148,6 +162,16 @@ const getDate = () =>{
 }
 // 加载更多数据
 const listInit = async (pageNumber) => {
+  const data = {
+    page: page.value,
+    type:type.value,
+    smallcate:smallcate.value,
+    bigcate:bigcate.value,
+    keywords:searchValue.value,
+    user_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
   Taro.showLoading({
     title: '加载中...',
   });
@@ -158,13 +182,37 @@ const listInit = async (pageNumber) => {
       'content-type': 'application/json'
     },
     data: {
-      page: page.value,
-      type:type.value,
-      smallcate:smallcate.value,
-      bigcate:bigcate.value,
-      keywords:searchValue.value,
-      uesr_token:Taro.getStorageSync('userUid'),
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
+      ...data,
+    }
+  }).then((res) => {
+    if (res.statusCode === 200) {
+      dataList.value = [...dataList.value, ...res.data.data.list];
+      Taro.hideLoading();
+    } else {
+    }
+  });
+};
+const listSearch = async (pageNumber) => {
+  const data = {
+    page: 1,
+    type:type.value,
+    smallcate:smallcate.value,
+    bigcate:bigcate.value,
+    keywords:searchValue.value,
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
+  Taro.showLoading({
+    title: '加载中...',
+  });
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/index',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      ...data,
     }
   }).then((res) => {
     if (res.statusCode === 200) {
@@ -176,6 +224,7 @@ const listInit = async (pageNumber) => {
   });
 };
 import CryptoJS from 'crypto-js';
+import generateAndEncryptToken from "../../util/sort";
 const loadMoreData = async () => {
   if (loading.value) return;
   try {
@@ -208,7 +257,7 @@ const siftDate = () =>{
   });
 }
 // 在组件挂载后首次加载或监听滚动到底部事件来调用 loadMoreData 方法
-onMounted(() => {
+useDidShow(() => {
   loadMoreData();
 });
 const refreshData = async () => {
@@ -224,34 +273,56 @@ const Sure = () => {
   console.log('确定')
   showRight.value = false;
   page.value = 1
-  listInit()
+  dataList.value = [];
+  listSearch()
 };
-const Collection = (id) => {
-  if(Taro.getStorageSync('userUid') ==null){
+const Collection = (item) => {
+  if (Taro.getStorageSync('userUid') == null || Taro.getStorageSync('userUid') === ''){
     Taro.showToast({
       title: '请先登录',
       icon: 'none',
       duration: 2000
     })
+  }else {
+    const data = {
+      pano_id: item.id,
+      uesr_token:Taro.getStorageSync('userUid'),
+    }
+    const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+    const encryptedToken = generateAndEncryptToken(data, secret);
+    if(Taro.getStorageSync('userUid') ==null){
+      Taro.showToast({
+        title: '请先登录',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+    Taro.request({
+      url: 'https://vr.justeasy.cn/xcx/pano/set_like',
+      method: 'GET',
+      header: {
+        'content-type': 'application/json'
+      },
+      data: {
+        ...data,
+        token:encryptedToken
+      }
+    }).then((res) => {
+      console.log(res.data)
+      if (res.data.status === 200) {
+        item.is_like = 1
+        item.like_num++;
+        // page.value = 1
+        // listSearch()
+      } else {
+        Taro.showToast({
+          title: res.data.msg,
+          icon: 'none',
+          duration: 2000
+        })
+      }
+    });
   }
-  Taro.request({
-    url: ' https://vr.justeasy.cn/xcx/pano/set_like',
-    method: 'GET',
-    header: {
-      'content-type': 'application/json'
-    },
-    data: {
-      pano_id: id,
-      token: CryptoJS.MD5('YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString(),
-      uesr_token:Taro.getStorageSync('userUid')
-    }
-  }).then((res) => {
-    if (res.statusCode === 200) {
-      listInit()
-    } else {
-      throw new Error('Failed to fetch data');
-    }
-  });
 }
 const onReachBottom = () => {
   console.log('触底啦！加载更多数据');
@@ -262,25 +333,42 @@ useReachBottom(() => {
   console.log('触底啦！加载更多数据');
   loadMoreData()
 });
-//
+
 // // 监听下拉刷新事件，触发刷新数据
-usePullDownRefresh(() => {
-  console.log('onPullDownRefresh')
-  // refreshData()
-})
+// usePullDownRefresh(() => {
+//   page.value = 1
+//   refreshData()
+//   getDate()
+//   siftDate()
+//   listInit()
+//   console.log('onPullDownRefresh')
+//   // refreshData()
+// })
 const tabClick = (e) => {
   type.value = Number(e.paneKey)
   page.value = 1
-  listInit()
+  searchValue.value = ''
+  listSearch()
 }
-const unableCollection = () => {
-  Taro.showToast({
-    title: '赞过啦',
+const handleBackToTop = () => {
+  Taro.pageScrollTo({
+    scrollTop: 0,
+    duration: 300 // 滚动动画持续时间，单位ms，默认300ms
   })
+  page.value = 1
 }
 /*作品加密*/
 const dialogVisibleWorkEncrypt = ref(false)
 const openWorkEncryptDialog = () => {
   dialogVisibleWorkEncrypt.value = true
 }
+const fixed = ref(false)
+usePageScroll((res) => {
+  if (res.scrollTop > 300) {
+    fixed.value = true
+  }else {
+    fixed.value = false
+  }
+  console.log(res.scrollTop)
+})
 </script>

@@ -22,47 +22,55 @@
           { required: true, message: '请选择作品分类' },
       ]"
       >
-        <view class="work-type" v-if="checkBigcate && checksmallcate">
+        <view class="work-type" v-if="checkBigcate && checksmallcate" @click="workShow = true">
           {{checkBigcate}}-{{checksmallcate}}
         </view>
         <view v-else class="work-type" @click="workShow = true">
           <nut-input v-model="formData.checkBigcate" placeholder="请选择作品分类" type="text" readonly class="form-input"/>
-          <image src="../../../images/arrow.png" class="work-icon"/>
+<!--          <image src="../../../images/arrow.png" class="work-icon"/>-->
         </view>
       </nut-form-item>
       <nut-form-item
-        label="发布展示："
+        label="发布展示"
         prop="publish"
         class="publish-wrap"
       >
         <view class="publish-box">
           <nut-checkbox v-model="wantshow" shape="button"> 全景首页 </nut-checkbox>
-          <nut-checkbox v-model="myshow" shape="button" @change="vipShow"> 微官网(VIP) </nut-checkbox>
+          <nut-checkbox v-model="myshow" shape="button" @change="vipShow(1)"> 微官网(VIP) </nut-checkbox>
         </view>
       </nut-form-item>
       <nut-form-item
-        label="水印展示："
+        label="水印展示"
         prop="water"
-        class="publish-wrap"
+        class="publish-wrap-water"
       >
-        <view class="publish-box">
-          <nut-checkbox v-model="water_text" shape="button"> 开启防盗保护 </nut-checkbox>
-          <nut-checkbox v-model="water_text_open" shape="button"> 去除作品水印</nut-checkbox>
+        <view class="publish-box-vip">
+<!--          <nut-checkbox v-model="water_text" shape="button"> 开启防盗保护 </nut-checkbox>-->
+          <nut-checkbox v-model="water_text_open" shape="button" @change="vipShow(2)"> 去除作品水印（VIP）</nut-checkbox>
         </view>
       </nut-form-item>
-      <nut-form-item label="上传全景：" class="upload-box">
+      <nut-form-item label="上传全景" class="upload-box">
 <!-- @click="uploadImage"       -->
-        <view class="upload-img" @click="showFlag = true">
+        <view class="upload-img" @click="uploadFileFlag">
           <view class="upload-img-icon" >
-            <image src="../../../images/fangda.png"  />
+            <image src="../../../images/fangda.svg"  />
             <view class="upload-img-text">上传2:1全景图</view>
           </view>
-          <view class="upload-img-box" v-for="(item, index) in selectedImages" :key="index" @click="chooseImage">
+          <view class="upload-img-box"  @click="chooseImage">
             <!-- 如果有已选择的图片则显示预览图 -->
-            <image v-if="item.url && !material"  :src="'https://vrimg.justeasy.cn/' + item.url"  mode="aspectFit" />
-            <image v-else-if="item.url && material"  :src="item.url" />
-            <!-- 删除按钮 -->
-            <i class="delete-icon" v-if="item.url" title="删除图片" @click.stop="deleteImage(index)">&times;</i>
+            <view style="display: flex;flex-flow: wrap;">
+              <view v-for="(item, index) in selectedImages" :key="index" style="position: relative">
+                <image :src="'https://vrimg.justeasy.cn/' + item.url"  mode="aspectFit" />
+                <!-- 删除按钮 -->
+                <i class="delete-icon" v-if="item.url" title="删除图片" @click.stop="deleteImage(index)">&times;</i>
+              </view>
+              <view v-for="(item, index) in sceneidsPreview" :key="index" style="position: relative">
+                <image :src="item.preview"  mode="aspectFit" />
+                <!-- 删除按钮 -->
+                <i class="delete-icon" v-if="item.preview" title="删除图片" @click.stop="deleteImageSceneids(index)">&times;</i>
+              </view>
+            </view>
           </view>
         </view>
       </nut-form-item>
@@ -74,7 +82,7 @@
       <view class="upload-tip-content">
         <view>1、请上传2:1比例的JPG图片，建议尺寸5000-12000px；</view>
         <view>2、会员用户不超出60MB，非会员不超出30MB；</view>
-        <view>3、合成页面单次最多上传10个场景，开始合成后会员前往编辑页可上传至60个；</view>
+        <view>3、合成页面单次最多上传5个场景，开始合成后会员前往网页端编辑页可上传至60个；</view>
         <view>4、作品信息修改等请到作品管理页面编辑。</view>
       </view>
     </view>
@@ -82,11 +90,11 @@
       <nut-button @click="submit" class="submit-btn">开始合成</nut-button>
     </view>
     <nut-popup v-model:visible="showFlag" position="bottom" :style="{ height: '18%' }">
-      <nut-cell class="set-pop">
-        <view @click="toMaterial">素材库选择</view>
+      <nut-cell class="set-pop"  @click="toMaterial">
+        <view>素材库选择</view>
       </nut-cell>
-      <nut-cell class="set-pop">
-        <view @click="uploadImage">本地上传</view>
+      <nut-cell class="set-pop"  @click="uploadImage">
+        <view>本地上传</view>
       </nut-cell>
     </nut-popup>
     <nut-popup v-model:visible="workShow" position="bottom" class="work-pop">
@@ -96,6 +104,10 @@
         :dialogVisible="vipVisible"
         @cancel="vipCancelSynthesis"
     />
+<!--    <LoginTipDaliog-->
+<!--        :dialogVisible="LoginTipVisible"-->
+<!--        @ok="closeLoginTip"-->
+<!--    />-->
   </view>
 </template>
 <script setup>
@@ -109,6 +121,7 @@ let smallcateList =  ref([])
 const checkBigcate = ref('')
 const checksmallcate = ref('')
 const wantshow = ref(false)
+const LoginTipVisible = ref(false)
 const myshow = ref(false)
 const vipVisible = ref(false)
 const water_text = ref(false)
@@ -132,24 +145,46 @@ const confirm = ({ selectedValue, selectedOptions }) => {
   formData.value.checkBigcate = selectedOptions[0].text;
   workShow.value = false;
 };
+const uploadFileFlag = () => {
+  if(userUid.value == null || userUid.value === ''){
+    Taro.showToast({
+      title: '请先登录',
+      icon: 'error',
+      duration: 2000
+    })
+    return;
+  }
+  const urls = selectedImages.value.map(item => item.url).filter(url => url !== ''); // 过滤掉空字符串（即 url 为空的情况）;
+  console.log(selectedImages);
+  if (urls.length === 5){
+    Taro.showToast({
+      title: '最多上传5张图片',
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
+  showFlag.value = true;
+};
 import generateAndEncryptToken from '../../util/sort.js'
 const submit = () => {
   const urls = selectedImages.value.map(item => item.url).filter(url => url !== ''); // 过滤掉空字符串（即 url 为空的情况）;
   const pic = urls.length > 1 ? urls.join(',') : urls[0] || '';
+  const sceneid = sceneids.value.map(item =>item.value).join(',').slice(1);
+  // const sceneid =  sceneids.value.length > 1 ? sceneids.value.join(',') : sceneids.value[0] || '';
+  console.log(sceneids.value,sceneid,'sceneid',urls)
   const sortedData = {
-    bcate: formData.value.classify[0],
-    scate: formData.value.classify[1],
+    bcate: formData.value.classify[0] || 0,
+    scate: formData.value.classify[1] || 0,
     title: formData.value.title,
     wantshow: wantshow.value ? 1 : 0,
     myshow: myshow.value ? 1 : 0,
-    water_text: water_text.value || null,
+    // water_text: water_text.value,
     water_text_open: water_text_open.value ? 1 : 0,
     pic: pic,
-    sceneids:'',
+    sceneids:sceneid,
     uesr_token: Taro.getStorageSync('userUid')
   };
-  // const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
-  // const encryptedToken = generateAndEncryptToken(sortedData, secret);
   console.log(encryptedToken); // 页面上只需要使用这个encryptedToken
   const filteredData = Object.entries(sortedData)
     .filter(([key, value]) => value !== null && value !== ''&& value !== undefined)
@@ -159,11 +194,10 @@ const submit = () => {
     .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
     .map(([key, value]) => `${key}=${value}`)
     .join('&');
-  console.log(queryString+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh','queryString')
   const encryptedToken = CryptoJS.MD5(queryString+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString();
   console.log(encryptedToken,'encryptedData')
   console.log('formData', formData.value,selectedImages.value);
-  if (pic.length!== 0){
+  if (pic.length!== 0 || sceneid.length !== 0 ){
     formRef.value?.validate().then(({ valid, errors }) => {
       if (valid) {
         Taro.showLoading({
@@ -182,15 +216,14 @@ const submit = () => {
             token: encryptedToken
           }
         }).then((res) => {
-          if (res.statusCode === 200) {
-            console.log(res.data.data);
+          if (res.data.status === 200) {
             uploadData.value = res.data.data;
             if (uploadData.value) {
               requestApi(uploadData.value);
             }
           } else {
             Taro.showToast({
-              title: res.data.data.msg,
+              title: res.data.msg,
               icon: 'error',
               duration: 2000
             })
@@ -214,11 +247,21 @@ const submit = () => {
     })
   }
 };
-const vipShow = () =>{
+const vipShow = (type) =>{
   console.log('vipShow',userVip.value )
-  if(String(userVip.value) === '0'){
-    vipVisible.value = true
-    myshow.value = false
+  switch (type){
+    case 1:
+      if(String(userVip.value) === '0'){
+        vipVisible.value = true
+        myshow.value = false
+      }
+      break;
+    case 2:
+      if(String(userVip.value) === '0'){
+        vipVisible.value = true
+        water_text_open.value = false
+      }
+      break;
   }
 }
 const vipCancelSynthesis = () =>{
@@ -245,14 +288,9 @@ const nameLengthValidator = (val) => {
 };
 /*上传*/
 const uploadImage = async () => {
-  if(userUid.value == null){
-    Taro.showToast({
-      title: '请先登录',
-      icon: 'error',
-      duration: 2000
-    })
-    return;
-  }
+  console.log(selectedImages.value , 'selectedImages.value ')
+  selectedImages.value = selectedImages.value.filter(item => item.url !== '');
+  console.log(selectedImages.value ,'selectedImages.value ')
   showFlag.value = false;
   material.value = false
   Taro.chooseImage({
@@ -269,7 +307,7 @@ const uploadImage = async () => {
         filePath: tempFilePaths[0],
         name:'file',
         formData:{
-          sessionid: '39',
+          sessionid: sessionid,
         },
         success: function(res) {
           let dataStr = res.data.trim(); // 去除字符串前后空白字符
@@ -279,10 +317,11 @@ const uploadImage = async () => {
           let data;
           try {
             data = JSON.parse(dataStr);
-            if (data.status === 200) {
+            if (data.status === 200 && data.filename) {
               selectedImages.value.push({
                 url: data.filename
               });
+              console.log(data.filename,'selectedImages',selectedImages.value)
             } else {
               Taro.showToast({
                 title: data.msg,
@@ -291,7 +330,6 @@ const uploadImage = async () => {
               })
             }
           } catch (error) {
-            console.error('Invalid server response format - could not parse as JSON:', dataStr);
           }
       },
         fail(err) {
@@ -309,6 +347,14 @@ const uploadImage = async () => {
 const deleteImage = (index) =>{
   selectedImages.value.splice(index, 1);
 };
+const deleteImageSceneids = (index) =>{
+  console.log('deleteImageSceneids', Taro.getStorageSync('materialList'), sceneidsPreview.value)
+  sceneidsPreview.value.splice(index, 1);
+  sceneids.value.splice(index, 1);
+  Taro.setStorageSync('materialList', Taro.getStorageSync('materialList').filter((item, index) => {
+    return item.sceneid !== sceneidsPreview.value[index]
+  }));
+};
 /*
  chooseImage = async () => {
       const { tempFiles } = await Taro.chooseImage({
@@ -320,6 +366,7 @@ const deleteImage = (index) =>{
 /*失败提示*/
 import { reactive } from 'vue';
 import VipDilaog from "../../components/Dialog/VipDilaog.vue";
+import LoginTipDaliog from "../../components/Dialog/LoginTipDaliog.vue";
 const state = reactive({
   msg: 'toast',
   type: 'text',
@@ -354,11 +401,20 @@ const requestApi = (uploadData) => {
         Taro.showToast({
           title:'合成成功'
         })
-        Taro.navigateTo({
-          url: `/pages/webview/index?url=${newStatusCode.edit_url}`,
-        })
+        formData.value.classify = ''
+        formData.value.title = ''
+        formData.value.checkBigcate = ''
+        water_text.value = ''
+        wantshow.value = false
+        water_text_open.value = false
+        myshow.value = false
+        selectedImages.value = [];
+        sceneidsPreview.value = [];
+        checkBigcate.value=''
+        checksmallcate.value=''
+        Taro.removeStorageSync('materialList')
+        console.log(' formData.value', formData.value);
       } else {
-        console.log('接口返回状态码 -200，继续刷新接口');
         // 在这里可以添加一些其他逻辑，例如处理数据等
         // 等待一段时间后继续刷新接口
         setTimeout(() => {
@@ -397,40 +453,96 @@ const siftDate = () =>{
   });
 }
 const material = ref(false);
-const toMaterial = () => {
-  if(userUid.value == null){
-    Taro.showToast({
-      title: '请先登录',
-      icon: 'error',
-      duration: 2000
-    })
-    return;
-  }
+const toMaterial = (key, data) => {
   showFlag.value = false
+  material.value = true
+  Taro.setStorageSync('material', material.value)
   Taro.navigateTo({
     url: `/pages/Material/index`,
   })
 }
+const sceneids = ref([])
+const sceneidsPreview = ref([])
 const getMaterial = () => {
   const value = Taro.getStorageSync('materialList')
-  console.log(value, 'materialList','value')
-  let newUrl = value.replace("https://vrimg.justeasy.cn/", "");
-  const index = selectedImages.value.findIndex(item => item.url === value);
+  console.log(value,"value")
+  const index = sceneids.value.findIndex(item => item === value);
   // 如果不存在，则将新对象推入数组
   if (index === -1) {
-    selectedImages.value.push({
-      url: newUrl,
+    sceneids.value.push({
+      value
     });
   }
-  Taro.removeStorageSync('materialList');
+  console.log(sceneids.value,"sceneids.value")
+  const sceneid = sceneids.value.map(item =>item.value).join(',').slice(1);
+  console.log(sceneid,'scenid')
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/get_scene_info',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data:{
+      sceneid: sceneid
+    }
+  }).then((res) => {
+    if (res.data.status === 200) {
+      sceneidsPreview.value = res.data.data
+    }else {
+      Taro.toast({
+        title: '获取失败',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+  })
 }
+const sessionid = ref('')
+const getUid = () => {
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/get_uid',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data:{
+      user_token:Taro.getStorageSync('userUid')
+    }
+  }).then((res) => {
+    if (res.data.status === 200) {
+      sessionid.value = res.data.data
+    }else {
+      Taro.removeStorageSync('userUid');
+    }
+  })
+}
+
 useDidShow(() => {
+  // formData.value.classify = ''
+  // formData.value.title = ''
+  // formData.value.checkBigcate = ''
+  // water_text.value = ''
+  // wantshow.value = false
+  // water_text_open.value = false
+  // myshow.value = false
+  // selectedImages.value = [];
+  // checkBigcate.value=''
+  // checksmallcate.value=''
   userUid.value = Taro.getStorageSync('userUid')
+  if(Taro.getStorageSync('userUid') == null || Taro.getStorageSync('userUid') === ''){
+    LoginTipVisible.value = true
+  }
   getMaterial()
 })
+onMounted(()=>{
+  getUid()
+})
+const closeLoginTip = () =>{
+  LoginTipVisible.value = false
+}
 const userUid = ref('')
 const userVip = ref('')
-onMounted(()=>{
+useDidShow(()=>{
   console.log(Taro.getStorageSync('UserVip'))
   siftDate();
   userVip.value = Taro.getStorageSync('UserVip')
