@@ -79,7 +79,7 @@
       justify-content: space-around;
       align-items: center;
       .item-count{
-        max-width: 30px;
+        max-width: 60px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -182,4 +182,8 @@
   left: 0;
   right: 0;
   z-index: 999;
+}
+.item-eye{
+  color: #9999;
+  font-size: 26rpx
 }

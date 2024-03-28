@@ -20,7 +20,7 @@ const onCancel = () => {
 }
 const onOk = () => {
   Taro.navigateTo({
-    url: `/pages/webview/index?url=https://jeapp.justeasy.cn/vr/rechargeVip.html`,
+    url: '/modulePay/pages/RechargeM/index',
   })
 }
 </script>

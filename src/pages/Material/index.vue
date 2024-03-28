@@ -7,7 +7,7 @@
         </template>
       </nut-searchbar>
     </view>
-    <nut-tabs v-model="materialType" align="left" @click="getMaterial">
+    <nut-tabs v-model="materialType" align="left" @change="getMaterial">
       <nut-tab-pane title="原创" pane-key="-1" class="book-list">
         <nut-radio-group v-model="MaterialVal">
           <nut-radio :label="item.sceneid" v-for="item in materialList" :key="item.id">

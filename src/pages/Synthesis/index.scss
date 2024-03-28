@@ -66,8 +66,8 @@
 .publish-box{
   display: flex;
   padding-left: 20px;
-  .nut-checkbox{
-    width: 215px;
+  .publish-box-item{
+    padding: 0 50px;
     height: 70px;
     text-align: center;
     border-radius: 8px;
@@ -75,25 +75,32 @@
     justify-content: center;
     background: #F8F8F8;
     margin-right: 20px;
+    color: #333333;
+    font-size: 24px;
+    line-height: 70px;
+    border: 1px solid #F8F8F8;
   }
-  .nut-checkbox__button--active{
-    width: 215px;
+  .publish-box-item-active{
+    color: #6C6BFC!important;
+    justify-content: center;
+    border-color:#6C6BFC!important;;
+    background: #ffffff url("../../../images/gou.png") no-repeat right bottom!important;;
+    background-size: 40px!important;;
+    overflow:visible!important;;
+    z-index: 999;
+  }
+  .publish-box-two{
+    padding: 0 40px;
     height: 70px;
-    border-radius: 8px;
     text-align: center;
-    color: #6C6BFC;
+    border-radius: 8px;
     align-items: center;
     justify-content: center;
-    background: #ffffff;
-    border: 1px solid #6C6BFC;
-    background-image: url("../../../images/gou.png");
-    background-repeat: no-repeat;
-    background-position: right bottom;
-    background-size: 40px;
-    z-index: 99;
-    &::after{
-      background: none;
-    }
+    background: #F8F8F8;
+    color: #333333;
+    font-size: 24px;
+    line-height: 70px;
+    border: 1px solid #F8F8F8;
   }
 }
 .publish-box-vip{
@@ -119,6 +126,7 @@
     justify-content: center;
     background: #ffffff;
     border: 1px solid #6C6BFC;
+    border-left: 1px solid #6C6BFC;
     background-image: url("../../../images/gou.png");
     background-repeat: no-repeat;
     background-position: right bottom;
@@ -227,7 +235,7 @@
 }
 .publish-wrap{
   .nut-form-item__label{
-     padding-left: 62px;
+     padding-left: 25px;
    }
 }
 .publish-wrap-water{

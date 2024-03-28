@@ -9,8 +9,8 @@
       class="home-swiper"
     >
       <nut-swiper-item v-for="(item, index) in sliderList" :key="index">
-        <view @click="toUrlLink(item.url)">
-          <view><image :src="item.pic" style="width: 100%;height:150px"/></view>
+        <view @click="toUrlLink(item)">
+          <view><image :src="item.pic" style="width: 100%;height:320rpx" aspectFit="aspectFill"/></view>
         </view>
       </nut-swiper-item>
     </nut-swiper>
@@ -32,15 +32,9 @@
         </nut-searchbar>
       </view>
       <view>
-<!--        <view :class="fixed ? 'fix' : ''  ">12356</view>-->
-<!--        <template #titles>-->
-<!--          <div v-for="item in typeList" :key="item.id" :class="fixed?'fixed':''" @click="type = item.paneKey">-->
-<!--            {{ item.name }}-->
-<!--          </div>-->
-<!--        </template>-->
           <nut-tabs v-model="tabValue" class="home-tabs" @click="tabClick">
               <nut-tab-pane :title="item.name" :pane-key="item.id" class="list_box" v-for="item in typeList" :key="item.id">
-                <view  v-if="dataList.length>0" class="list-item">
+                  <view  v-if="dataShow" class="list-item">
                   <view class="item" v-for="item in dataList" :key="item.id">
                     <view class="list">
                       <view class="list_pic" @click="getUrlLink(item)">
@@ -49,24 +43,18 @@
                       <view class="item_bt">{{ item.name }}</view>
                       <view class="item-description">
                         <view class="item-description-text">
-                          {{ item.username }}
+                          {{ item.author }}
                         </view>
-                        <view class="item-thumb" @click="Collection(item)">
-                          <image src="../../../images/tuijian.png" class="item-count-icon" v-if="item.is_like !== 1"/>
-                          <image src="../../../images/tuicolor.png" class="item-count-icon" v-else/>
-                          <view class="item-count" :style="{ color: item.is_like === 1 ? '#6C6BFC' : '' }">{{ item.like_num }}</view>
+                        <view class="item-thumb">
+                          <IconFont name="eye" class="item-eye"></IconFont>
+                          <view class="item-count">{{ item.view_num }}</view>
                         </view>
-                        <!--                      <view class="item-thumb" @click="unableCollection()" v-else>-->
-                        <!--                        <image src="../../../images/tuicolor.png" class="item-count-icon"/>-->
-                        <!--                        <view class="item-count color">{{ item.like_num }}</view>-->
-                        <!--                      </view>-->
                       </view>
                     </view>
                   </view>
                 </view>
-
                 <view v-else>
-                  <image class="empty" src="../../../images/empty.svg" mode="aspectFit" style="margin: 0 auto;"></image>
+                  <image class="empty" src="../../../images/empty.svg" mode="aspectFit" style="margin: 0 auto;display: block"></image>
                   <view style="font-size: 24rpx;text-align: center">暂无数据~</view>
                 </view>
               </nut-tab-pane>
@@ -115,8 +103,11 @@ let smallcate =  ref(0)
 let bigcateList =  ref([])
 let smallcateList =  ref([])
 let typeList =  ref([])
+const dataShow = ref(true)
+
 /*搜索*/
 import { Search2 } from '@nutui/icons-vue-taro';
+import {useUserStore} from "../../stores/userStore";
 const searchValue = ref('');
 const showRight = ref(false);
 
@@ -135,14 +126,32 @@ useDidShow(() => {
 })
 /*getUrlLink*/
 const getUrlLink = (item) => {
-  Taro.navigateTo({
-    url: `/pages/webview/index?url=${item.work_url}`
-  })
+  if (Taro.getEnv() === Taro.ENV_TYPE.TT) {
+    if (item.dy_url === ''){
+      return
+    }
+    Taro.navigateTo({
+      url: `/pages/webview/index?url=${item.dy_url}`
+    })
+  }else if (Taro.getEnv() === Taro.ENV_TYPE.WEAPP){
+    Taro.navigateTo({
+      url: `/pages/webview/index?url=${item.work_url}`
+    })
+  }
 };
-const toUrlLink = (url) => {
-  Taro.navigateTo({
-    url: `/pages/webview/index?url=${url}`
-  })
+const toUrlLink = (item) => {
+  if (Taro.getEnv() === Taro.ENV_TYPE.TT) {
+    if (item.dy_url === ''){
+      return
+    }
+    Taro.navigateTo({
+      url: `/pages/webview/index?url=${item.dy_url}`
+    })
+  }else if (Taro.getEnv() === Taro.ENV_TYPE.WEAPP){
+    Taro.navigateTo({
+      url: `/pages/webview/index?url=${item.url}`
+    })
+  }
 };
 /* 接口请求*/
 const getDate = () =>{
@@ -189,6 +198,7 @@ const listInit = async (pageNumber) => {
       dataList.value = [...dataList.value, ...res.data.data.list];
       Taro.hideLoading();
     } else {
+      dataShow.value = false
     }
   });
 };
@@ -219,7 +229,7 @@ const listSearch = async (pageNumber) => {
       dataList.value = res.data.data.list;
       Taro.hideLoading();
     } else {
-      throw new Error('Failed to fetch data');
+      dataShow.value = false
     }
   });
 };
@@ -252,13 +262,15 @@ const siftDate = () =>{
       smallcateList.value = res.data.data.smallcate;
       typeList.value = res.data.data.type;
     } else {
-      throw new Error('Failed to fetch data');
+      dataShow.value = false
     }
   });
 }
 // 在组件挂载后首次加载或监听滚动到底部事件来调用 loadMoreData 方法
 useDidShow(() => {
   loadMoreData();
+  const sign = Taro.getCurrentInstance().router.params.qjxcx
+  Taro.setStorageSync('sign', sign)
 });
 const refreshData = async () => {
   // 重新初始化数据，这里简单起见，你需要替换为真实的刷新逻辑
@@ -348,6 +360,7 @@ const tabClick = (e) => {
   type.value = Number(e.paneKey)
   page.value = 1
   searchValue.value = ''
+  dataShow.value = true
   listSearch()
 }
 const handleBackToTop = () => {

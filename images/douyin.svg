@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon_weixin</title>
+    <defs>
+        <circle id="path-1" cx="40" cy="40" r="40"></circle>
+        <filter x="-20.0%" y="-17.5%" width="140.0%" height="140.0%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.147018753 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="画板" transform="translate(-629, -20)">
+            <g id="编组-2备份" transform="translate(629, 20)">
+                <g id="编组" transform="translate(10, 8)">
+                    <g id="椭圆形">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                        <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                    </g>
+                    <g id="douyin" transform="translate(23, 18)" fill="#333333" fill-rule="nonzero">
+                        <path d="M34.9507793,17.3865234 C31.5053322,17.3865234 28.1542248,16.2667969 25.3978671,14.1955078 L25.3978671,28.6453125 C25.3978671,36.0240234 19.7128794,42 12.6989336,42 C5.68498769,42 0,36.0240234 0,28.6453125 C0,21.2666016 5.68498769,15.290625 12.6989336,15.290625 C13.4003281,15.290625 14.0812141,15.3521484 14.7456932,15.4669922 L14.7456932,23.1205078 C14.1099262,22.8703125 13.4331419,22.7431641 12.7522559,22.7431641 C9.62264151,22.7431641 7.08367514,25.4091797 7.08367514,28.7027344 C7.08367514,31.9921875 9.62264151,34.6623047 12.7522559,34.6623047 C15.8777687,34.6623047 18.416735,31.9921875 18.416735,28.7027344 L18.416735,0 L25.5004102,0 C25.5004102,5.51660156 29.7538966,9.98730469 35,9.98730469 L35,17.3824219 L34.9507793,17.3865234" id="路径"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

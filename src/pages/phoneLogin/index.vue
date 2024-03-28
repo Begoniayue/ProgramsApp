@@ -108,6 +108,7 @@ const getSubmitLogin = () => {
     data: {
       username: formData.value.phoneNumber,
       code: formData.value.verifyCode,
+      sign: Taro.getStorageSync('sign')
     },
     success: (res) => {
       console.log(res.data.status)
@@ -141,6 +142,7 @@ const toSubmitLogin = () => {
   const data = {
     username: formDataAccount.value.account,
     password: CryptoJS.MD5(formDataAccount.value.password).toString(),
+    sign: Taro.getStorageSync('sign')
   }
   const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
   const encryptedToken = generateAndEncryptToken(data, secret);

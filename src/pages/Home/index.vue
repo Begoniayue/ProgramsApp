@@ -82,7 +82,7 @@
               <template #leftin>  <IconFont name="search"></IconFont> </template>
             </nut-searchbar>
           </view>
-          <view class="item" v-if="dataList.length > 0">
+          <view class="item" v-if="dataShow">
             <view class="item-list" v-for="(item, index) in dataList" :key="index">
               <view class="left-container" @click="toPreview(item)">
                 <image :src="item.preview" mode="aspectFit" class="image"></image>
@@ -137,7 +137,7 @@
               <template #leftin>  <IconFont name="search"></IconFont> </template>
             </nut-searchbar>
           </view>
-          <view class="item" v-if="dataList.length>0">
+          <view class="item" v-if="dataShow">
             <view class="item-list" v-for="(item, index) in dataList" :key="index">
               <view class="left-container" @click="toPreview(item)">
                 <image :src="item.preview" mode="aspectFit" class="image"></image>
@@ -171,9 +171,9 @@
           </view>
         </nut-tab-pane>
         <nut-tab-pane title="预约信息" pane-key="3" class="list-box">
-          <nut-tabs v-model="bookValue" @click="getBookInfo()" @change="getBookInfo()">
+          <nut-tabs v-model="bookValue" @change="getBookList">
             <nut-tab-pane title="全景作品预约" pane-key="1" class="book-list">
-              <view class="book-wrap" v-if="bookData.length>0">
+              <view class="book-wrap" v-if="dataShow">
                 <view class="book-item" v-for="(item, index) in bookData" :key="index">
                   <nut-cell>
                     <template #title>
@@ -202,7 +202,7 @@
               </view>
             </nut-tab-pane>
             <nut-tab-pane title="微官网预约" pane-key="2" class="book-list">
-              <view class="book-wrap" v-if="bookData.length>0">
+              <view class="book-wrap" v-if="dataShow">
                 <view class="book-item" v-for="(item, index) in bookData" :key="index">
                   <nut-cell>
                     <template #title>
@@ -240,7 +240,7 @@
           </view>
           <nut-tabs v-model="materialType" align="left" @change="getMaterialList">
             <nut-tab-pane title="原创" pane-key="-1" class="book-list">
-              <view class="item" v-if="materialList.length">
+              <view class="item" v-if="dataShow">
                 <view class="item-list" v-for="(item, index) in materialList" :key="index">
                   <view class="left-container" @click="toPreviewMaterial(item)">
                     <image :src="item.preview" mode="aspectFit" class="image"></image>
@@ -266,7 +266,7 @@
               </view>
             </nut-tab-pane>
             <nut-tab-pane title="已购" pane-key="1" class="book-list">
-              <view class="item" v-if="materialList.length">
+              <view class="item" v-if="dataShow">
                 <view class="item-list" v-for="(item, index) in materialList" :key="index">
                   <view class="left-container" @click="toPreviewMaterial(item)">
                     <image :src="item.preview" mode="aspectFit" class="image"></image>
@@ -292,7 +292,7 @@
               </view>
             </nut-tab-pane>
             <nut-tab-pane title="VIP场景" pane-key="6" class="book-list">
-              <view class="item" v-if="materialList.length">
+              <view class="item" v-if="dataShow">
                 <view class="item-list" v-for="(item, index) in materialList" :key="index">
                   <view class="left-container" @click="toPreviewMaterial(item)">
                   <image :src="item.preview" mode="aspectFit" class="image"></image>
@@ -328,7 +328,7 @@
               <image class="icon" src="../../../images/set.png" mode="aspectFit"></image>
             </view>
           </view>
-          <view class="item" v-if="recycleList.length>0">
+          <view class="item" v-if="dataShow">
             <view class="item-list" v-for="(item, index) in recycleList" :key="index">
               <view class="left-container">
                 <image :src="item.preview" mode="aspectFit" class="image"></image>
@@ -368,8 +368,13 @@
         <view class="share-title">直接分享</view>
         <view class="share-wrap">
           <view class="share-item">
-            <button class="share-content" open-type="share" @click="shareLink">
-              <image src="../../../images/wei.svg" mode="aspectFit" class="share-icon"></image>
+            <button class="share-content" open-type="share">
+              <view v-if="String(useAppEnv.currentEnv) === 'WEAPP'">
+                <image src="../../../images/wei.svg" mode="aspectFit" class="share-icon"></image>
+              </view>
+              <view v-else>
+                <image src="../../../images/douyin.svg" mode="aspectFit" class="share-icon"></image>
+              </view>
               <view class="share-type" v-if="String(useAppEnv.currentEnv) === 'WEAPP'">
                 微信好友
               </view>
@@ -440,10 +445,10 @@
         </view>
       </nut-popup>
       <nut-popup v-model:visible="showSet" position="bottom" :style="{ height: '18%' }">
-        <nut-cell class="set-pop" v-if="UserVip === 165" @click="referVisible = true">
+        <nut-cell class="set-pop" v-if="UserVip === 0"  @click="vipVisible = true">
           <view>回收站密码</view>
         </nut-cell>
-        <nut-cell class="set-pop" v-else  @click="vipVisible = true">
+        <nut-cell class="set-pop" v-else @click="referVisible = true" >
           <view>回收站密码</view>
         </nut-cell>
         <nut-cell class="set-pop"  @click="visible = true">
@@ -571,7 +576,8 @@
           no-cancel-btn
           title="回收站密码"
           v-model:visible="recycleVisible"
-          @ok="onOk"
+          @ok="onrecycleVisibleOk"
+          :ok-auto-close="false"
       >
         <view>
           <nut-input  v-model="recyclePassword" placeholder="请输入加密密码"/>
@@ -641,11 +647,41 @@ const showShort = ref(false)
 const showTime = ref(false)
 const showCard = ref(false)
 const delvisible = ref(false)
+const dataShow = ref(true)
 const onCancel = () => {
   console.log('event cancel');
 };
-const onOk = () => {
-  console.log('event ok');
+const onrecycleVisibleOk = () => {
+  const data = {
+    pwd: recyclePassword.value,
+    uesr_token:Taro.getStorageSync('userUid'),
+  }
+  const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
+  const encryptedToken = generateAndEncryptToken(data, secret);
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/check_recycle',
+    method: 'POST',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      ...data,
+      token: encryptedToken
+    },
+  }).then((res) => {
+    if (res.data.status === 200) {
+      recycleVisible.value = false;
+      Taro.showToast({
+        title:'验证成功'
+      })
+    } else {
+      recycleVisible.value = true;
+      Taro.showToast({
+        icon:"error",
+        title:res.data.msg
+      })
+    }
+  });
 };
 const onRecycleOk = () => {
   const data = {
@@ -736,7 +772,6 @@ const onSaveShort = () => {
       Taro.setClipboardData({
         data: res.data.data,
         success: function (res) {
-         console.log('复制成功')
         }
       })
     } else {
@@ -745,7 +780,6 @@ const onSaveShort = () => {
   });
 };
 const SiftonCancel = () => {
-  console.log('event cancel');
 };
 const SiftonOk = () => {
   dataList.value = []
@@ -756,6 +790,7 @@ const baseClick = () => {
   visible.value = true;
 };
 const tabClick = (e) => {
+  dataShow.value = true
   type.value = e.paneKey
   page.value = 1
   materialPage.value = 1
@@ -765,6 +800,7 @@ const tabClick = (e) => {
   keywordsMaterial.value = ''
   dataList.value = []
   bookinfoList.value = []
+  bookData.value = []
   materialList.value = []
   recycleList.value = []
   switch (e.paneKey){
@@ -781,6 +817,8 @@ const tabClick = (e) => {
       getMaterial()
         break;
     case '5':
+      recycleVisibleFlag.value = true
+      recyclePassword.value = ''
       getRecycle()
         break;
     default:
@@ -788,6 +826,7 @@ const tabClick = (e) => {
   }
 }
 const tabClickLogin = () => {
+  dataShow.value = false
   Taro.showToast({
     title: '请先登录',
     icon: 'none',
@@ -795,31 +834,27 @@ const tabClickLogin = () => {
   })
 }
 const openTips = () => {
-  console.log('showTips')
   showTips.value = true;
 };
 const shareObject = ref({})
+const urlToFriend = ref('')
 const shareLink = (item) => {
-  console.log('shareLink',item)
   showShare.value = true;
   shareObject.value = item
-  getInfo()
+  urlToFriend.value = item.detail_url
 };
 const toWorkSetting = (panoid,UserVip) => {
-  console.log('toWorkSetting',panoid,UserVip)
-  console.log('toWorkSetting',panoid,UserVip)
   Taro.navigateTo({
     url: `/pages/Work/index?panoid=${panoid}&UserVip=${UserVip}`,
   })
 }
 const openVip = () => {
   Taro.navigateTo({
-    url: `/pages/webview/index?url=https://jeapp.justeasy.cn/vr/rechargeVip.html`,
+    url: '/modulePay/pages/RechargeM/index',
   })
 }
 const toMoreWorkSetting = (panoid,Vip) => {
   const vip = UserVip.value
-  console.log('toWorkSetting',panoid,UserVip)
   Taro.navigateTo({
     url: `/pages/MoreWork/index?panoid=${panoid}&UserVip=${vip}`,
   })
@@ -831,13 +866,15 @@ const goBatch = () => {
   })
 };
 useShareAppMessage((res) => {
+  console.log(urlToFriend.value,'urlToFriend.value')
   if (res.from === 'button') {
     // 来自页面内转发按钮
     return {
-      title: '我的分享标题',
-      path: '/pages/index/index',
-      imageUrl: 'https://m.360buyimg.com/babel/jfs/t1/164410/22/25162/93384/616eac6cE6c711350/0cac53c1b82e1b05.gif',
+      title: shareObject.value.name,
+      path: `/pages/webview/index?url=${urlToFriend.value}`,
+      imageUrl: shareObject.value.preview,
       success() {
+        console.log()
         // 分享成功后的回调处理
       },
       fail(err) {
@@ -845,24 +882,25 @@ useShareAppMessage((res) => {
       },
     };
   }
-  return {
-    title: '自定义转发标题',
-    path: '/page/user?id=123',
-  }
+  // return {
+  //   title: '自定义转发标题',
+  //   path: '/page/user?id=123',
+  // }
 })
 const storedUid = ref(null)
 const userStore = useUserStore();
 
 onMounted(()=>{
-  console.log(dataList.value,'123456')
 })
 useDidShow(() => {
+  dataShow.value = true
   keywords.value = ''
   page.value = 1
   materialPage.value = 1
   recyclePage.value = 1
   bookingPage.value = 1
   keywordsMaterial.value = ''
+  recyclePassword.value = ''
   recycleList.value = []
   bookData.value = []
   bookinfoList.value = []
@@ -876,7 +914,6 @@ useDidShow(() => {
   }
   getUserInfo();
   getList();
-  getRecycle()
 })
 /*获取用户信息*/
 const getUserInfo = () => {
@@ -885,7 +922,6 @@ const getUserInfo = () => {
   }
   const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
   const encryptedToken = generateAndEncryptToken(data, secret);
-  console.log({...data},encryptedToken,'123456') // 输出 'scene1&uid1'
   return  Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_user_info',
     method: 'GET',
@@ -904,7 +940,6 @@ const getUserInfo = () => {
       /*放入userstore中 并将UserVip的值放到内存*/
       Taro.setStorageSync('UserVip', UserVip.value);
       time_format(res.data.data.all.vip_endtime)
-      console.log('UserInfo', UserInfo.value,UserVip.value)
     } else {
       throw new Error('Failed to fetch data');
     }
@@ -946,7 +981,6 @@ const openInternet = () => {
         },
       }
   ).then((res) => {
-    console.log('res', res.data.data)
     if (res.data.status=== 200 && res.data.data.url) {
       Taro.navigateTo({
         url: `/pages/webview/index?url=${res.data.data.url}`
@@ -967,7 +1001,6 @@ const Sort = (num) => {
 }
 /*获取用户信息*/
 const getList = (search) => {
-  console.log(search)
   Taro.showLoading({
     title: '加载中',
   })
@@ -985,7 +1018,6 @@ const getList = (search) => {
   }
   const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
   const encryptedToken = generateAndEncryptToken(data, secret);
-  console.log('encryptedToken', encryptedToken)
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_my_pano_list',
     method: 'POST',
@@ -997,14 +1029,18 @@ const getList = (search) => {
       token: encryptedToken
     },
   }).then((res) => {
-    console.log('res', res.data.status )
     if (Number(res.data.status) === 200) {
       Taro.hideLoading();
       if (search === 'search'){
-      return dataList.value = res.data.data;
+        dataShow.value = res.data.data.length > 0;
+        return dataList.value = res.data.data;
       }
       dataList.value = [...dataList.value, ...res.data.data];
+      console.log(dataList.value.length)
+      dataShow.value =  dataList.value.length > 0;
+      console.log(dataList.value.length, 'dataListShow.length')
     } else {
+      Taro.hideLoading();
       if (res.data.msg === '请先登录') {
         Taro.showToast({
           title: '请先登录',
@@ -1016,7 +1052,6 @@ const getList = (search) => {
         //   url: '/pages/Login/index'
         // })
       }
-      throw new Error('Failed to fetch data');
     }
   });
 }
@@ -1029,7 +1064,6 @@ const getBookInfo = (type) => {
   Taro.showLoading({
     title: '加载中...',
   });
-  console.log('getBookInfo',bookValue.value,)
   const data = {
     page:bookingPage.value,
     type: bookValue.value,
@@ -1050,6 +1084,7 @@ const getBookInfo = (type) => {
     }).then((res) => {
       if (res.statusCode === 200) {
         bookData.value = [...bookData.value, ...res.data.data];
+        bookData.value.length === 0 ? dataShow.value = false : dataShow.value = true;
         Taro.hideLoading();
       } else {
         throw new Error('Failed to fetch data');
@@ -1065,6 +1100,12 @@ const getMaterialList = (search) => {
   materialList.value = []
   getMaterial()
 }
+const getBookList = (search) => {
+  bookinfoList.value = []
+  bookData.value = []
+  bookingPage.value = 1
+  getBookInfo()
+}
 const getMaterial = (search) => {
   Taro.showLoading({
     title: '加载中...',
@@ -1072,7 +1113,6 @@ const getMaterial = (search) => {
   if (search === 'search'){
     page.value = 1;
   }
-  console.log('materialPage',materialPage.value,keywordsMaterial.value)
   const data = {
     page: materialPage.value,
     type: materialType.value,
@@ -1081,7 +1121,6 @@ const getMaterial = (search) => {
   }
   const secret = 'YYlk*sdf000&&af#~@&987xdSJFF**sfsh';
   const encryptedToken = generateAndEncryptToken(data, secret);
-  console.log('getMaterial',materialType.value)
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/scene_list',
     method: 'POST',
@@ -1099,7 +1138,7 @@ const getMaterial = (search) => {
        return materialList.value = res.data.data;
       }
       materialList.value = [...materialList.value, ...res.data.data];
-      console.log('materialList',materialList.value)
+      materialList.value.length === 0 ? dataShow.value = false : dataShow.value = true;
     } else {
       throw new Error('Failed to fetch data');
     }
@@ -1109,6 +1148,7 @@ const getMaterial = (search) => {
 const recyclePage = ref(1)
 const recyclePage_size = ref('20')
 const recycleList = ref([])
+const recycleVisibleFlag = ref(false)
 const getRecycle = () => {
   const data = {
     page: recyclePage.value,
@@ -1132,11 +1172,14 @@ const getRecycle = () => {
     }).then((res) => {
       if (res.statusCode === 200) {
         recycleList.value = [...recycleList.value, ...res.data.data.list];
-        recycleVisible.value = res.data.data.is_open_layer_pwd === '1'
-        passwordFlag.value = res.data.data.is_open_layer_pwd === '1'
+        if (recycleVisibleFlag.value){
+          recycleVisible.value = res.data.data.recycle.is_open === '1'
+        }
+        recycleList.value.length === 0 ? dataShow.value = false : dataShow.value = true;
+        passwordFlag.value = res.data.data.recycle.is_open === '1' ? '1' : '0'
+        recycleWord.value = res.data.data.recycle.pwd
         console.log('recycleList',recycleList.value,recycleVisible.value)
       } else {
-        throw new Error('Failed to fetch data');
       }
     });
 }
@@ -1166,7 +1209,7 @@ const getSift = () => {
   })
 }
 const copyLink = () =>{
-  console.log('copyLink',shareObject)
+  console.log('copyLink',shareObject.value)
   Taro.setClipboardData({
     data: shareObject.value.detail_url,
   })
@@ -1357,6 +1400,7 @@ const ondelOk = (item) =>{
       Taro.showToast({
         title: '删除成功'
       })
+      recycleVisibleFlag.value = false
       getRecycle()
     }
   })
@@ -1394,26 +1438,6 @@ const delWork = (item) => {
   delvisible.value = true
   delItem.value = item
 }
-const canvasContext = Taro.createCanvasContext('myCanvas');
-function drawPoster() {
-  // 绘制背景和标题等.
-  canvasContext.beginPath();
-  canvasContext.setFillStyle('#fff');
-  canvasContext.fillRect(0, 0, 400, 400);
-  canvasContext.setFillStyle('#000');
-  canvasContext.setFontSize(24);
-  canvasContext.fillText(card.value.user_name, 200, 40);
-  canvasContext.drawImage(card.value.preview,20,20);
-  canvasContext.drawImage(card.value.logo_url,60,80);
-  canvasContext.drawImage(card.value.code_url,80,80);
-  return new Promise((resolve, reject) => {
-    canvasContext.draw(false, () => {
-      console.log('canvasContext', canvasContext);
-      resolve(canvasContext);
-      canvasContext.clearRect(0, 0, 400, 400);
-    });
-  });
-}
 
 function saveToAlbum(tempFilePath) {
   return new Promise((resolve, reject) => {
@@ -1425,27 +1449,6 @@ function saveToAlbum(tempFilePath) {
   });
 }
 
-function drawAndSave() {
-  drawPoster()
-      .then(() => Taro.canvasToTempFilePath({
-        canvasId: 'myCanvas',
-      }))
-      .then((res) => { // res 是一个对象，需要从中获取 filePath 字符串
-        const tempFilePath = res.tempFilePath;
-        return saveToAlbum(tempFilePath);
-      })
-      .then(() => console.log('已成功保存至相册'))
-      .catch(err => console.error('绘制或保存海报时发生错误：', err));
-}
-function saveToCard() {
-  return new Promise((resolve, reject) => {
-    Taro.saveImageToPhotosAlbum({
-      filePath:card.value.data,
-      success: () => resolve(),
-      fail: err => reject(err),
-    });
-  });
-}
 const toPreview = (item) => {
   Taro.navigateTo({
     url: `/pages/webview/index?url=${item.detail_url}`

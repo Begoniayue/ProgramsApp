@@ -36,8 +36,8 @@
         class="publish-wrap"
       >
         <view class="publish-box">
-          <nut-checkbox v-model="wantshow" shape="button"> 全景首页 </nut-checkbox>
-          <nut-checkbox v-model="myshow" shape="button" @change="vipShow(1)"> 微官网(VIP) </nut-checkbox>
+          <view :class="['publish-box-item', {'publish-box-item-active': wantshow}]" @click="vipShow(0)"> 全景首页 </view>
+          <view :class="['publish-box-two', {'publish-box-item-active': myshow}]" @click="vipShow(1)"> 微官网(VIP) </view>
         </view>
       </nut-form-item>
       <nut-form-item
@@ -82,7 +82,7 @@
       <view class="upload-tip-content">
         <view>1、请上传2:1比例的JPG图片，建议尺寸5000-12000px；</view>
         <view>2、会员用户不超出60MB，非会员不超出30MB；</view>
-        <view>3、合成页面单次最多上传5个场景，开始合成后会员前往网页端编辑页可上传至60个；</view>
+        <view>3、合成页面单次最多上传5个场景，开始合成后会员可在编辑页可上传至60个；</view>
         <view>4、作品信息修改等请到作品管理页面编辑。</view>
       </view>
     </view>
@@ -104,6 +104,7 @@
         :dialogVisible="vipVisible"
         @cancel="vipCancelSynthesis"
     />
+    <nut-dialog :title="Capacity.title" :content="Capacity.content" v-model:visible="showCapacity" @cancel="onCancelCapacity" @ok="onOkCapacity" />
 <!--    <LoginTipDaliog-->
 <!--        :dialogVisible="LoginTipVisible"-->
 <!--        @ok="closeLoginTip"-->
@@ -126,7 +127,9 @@ const myshow = ref(false)
 const vipVisible = ref(false)
 const water_text = ref(false)
 const showFlag = ref(false)
+const showCapacity = ref(false)
 const water_text_open = ref(false)
+const Capacity = ref({})
 const formData = ref({
   title: '',
   classify: [],
@@ -154,6 +157,22 @@ const uploadFileFlag = () => {
     })
     return;
   }
+  Taro.request({
+    url: 'https://vr.justeasy.cn/xcx/pano/create_auths',
+    method: 'GET',
+    header: {
+      'content-type': 'application/json'
+    },
+    data: {
+      uesr_token:Taro.getStorageSync('userUid'),
+    }
+  }).then((res) => {
+    if (res.data.status === -200) {
+      showCapacity.value = true;
+      Capacity.value = res.data.data;
+      return showFlag.value = false;
+    }
+  });
   const urls = selectedImages.value.map(item => item.url).filter(url => url !== ''); // 过滤掉空字符串（即 url 为空的情况）;
   console.log(selectedImages);
   if (urls.length === 5){
@@ -166,12 +185,21 @@ const uploadFileFlag = () => {
   }
   showFlag.value = true;
 };
+const onCancelCapacity = () =>{
+  showCapacity.value = false;
+}
+const onOkCapacity = () =>{
+  showCapacity.value = false;
+}
 import generateAndEncryptToken from '../../util/sort.js'
 const submit = () => {
   const urls = selectedImages.value.map(item => item.url).filter(url => url !== ''); // 过滤掉空字符串（即 url 为空的情况）;
   const pic = urls.length > 1 ? urls.join(',') : urls[0] || '';
-  const sceneid = sceneids.value.map(item =>item.value).join(',').slice(1);
-  // const sceneid =  sceneids.value.length > 1 ? sceneids.value.join(',') : sceneids.value[0] || '';
+  console.log(sceneid)
+  // const sceneid = sceneids.value.map(item =>item.value).join(',').slice(1);
+  const selectedSceneid = sceneids.value.map(item => item.value).filter(value => value !== '');
+  console.log(selectedSceneid,sceneids.value,'sceneids.value')
+  const sceneid =  selectedSceneid.length > 1 ? selectedSceneid.join(',') : selectedSceneid[0] || '';
   console.log(sceneids.value,sceneid,'sceneid',urls)
   const sortedData = {
     bcate: formData.value.classify[0] || 0,
@@ -197,7 +225,7 @@ const submit = () => {
   const encryptedToken = CryptoJS.MD5(queryString+'YYlk*sdf000&&af#~@&987xdSJFF**sfsh').toString();
   console.log(encryptedToken,'encryptedData')
   console.log('formData', formData.value,selectedImages.value);
-  if (pic.length!== 0 || sceneid.length !== 0 ){
+  if (pic.length!== 0 || selectedSceneid.length !== 0 ){
     formRef.value?.validate().then(({ valid, errors }) => {
       if (valid) {
         Taro.showLoading({
@@ -227,7 +255,6 @@ const submit = () => {
               icon: 'error',
               duration: 2000
             })
-            throw new Error('Failed to fetch data');
           }
         });
       } else {
@@ -250,11 +277,15 @@ const submit = () => {
 const vipShow = (type) =>{
   console.log('vipShow',userVip.value )
   switch (type){
+    case 0:
+      wantshow.value = !wantshow.value
+      break;
     case 1:
       if(String(userVip.value) === '0'){
         vipVisible.value = true
-        myshow.value = false
+        return  myshow.value = false
       }
+      myshow.value = !myshow.value
       break;
     case 2:
       if(String(userVip.value) === '0'){
@@ -288,9 +319,7 @@ const nameLengthValidator = (val) => {
 };
 /*上传*/
 const uploadImage = async () => {
-  console.log(selectedImages.value , 'selectedImages.value ')
   selectedImages.value = selectedImages.value.filter(item => item.url !== '');
-  console.log(selectedImages.value ,'selectedImages.value ')
   showFlag.value = false;
   material.value = false
   Taro.chooseImage({
@@ -348,12 +377,13 @@ const deleteImage = (index) =>{
   selectedImages.value.splice(index, 1);
 };
 const deleteImageSceneids = (index) =>{
-  console.log('deleteImageSceneids', Taro.getStorageSync('materialList'), sceneidsPreview.value)
   sceneidsPreview.value.splice(index, 1);
-  sceneids.value.splice(index, 1);
-  Taro.setStorageSync('materialList', Taro.getStorageSync('materialList').filter((item, index) => {
-    return item.sceneid !== sceneidsPreview.value[index]
-  }));
+  sceneids.value = [];
+  Taro.setStorageSync('materialList',[])
+  // Taro.setStorageSync('materialList', sceneids.value);
+// .filter((item, index) => {
+//     return item.sceneid !== sceneidsPreview.value[index]
+//   })
 };
 /*
  chooseImage = async () => {
@@ -387,6 +417,20 @@ const openToast = (type, msg, cover = false) => {
 const statusCode = ref(0);
 
 const requestApi = (uploadData) => {
+  formData.value.classify = ''
+  formData.value.title = ''
+  formData.value.checkBigcate = ''
+  water_text.value = ''
+  wantshow.value = false
+  water_text_open.value = false
+  myshow.value = false
+  selectedImages.value = [];
+  sceneidsPreview.value = [];
+  sceneids.value = [];
+  checkBigcate.value=''
+  checksmallcate.value=''
+  Taro.removeStorageSync('materialList')
+  Taro.setStorageSync('materialList',[])
   const { edit_url, ...newUploadData } = uploadData;
   const apiUrl = 'https://vr.justeasy.cn/xcx/pano/validate';
   Taro.request({
@@ -401,18 +445,6 @@ const requestApi = (uploadData) => {
         Taro.showToast({
           title:'合成成功'
         })
-        formData.value.classify = ''
-        formData.value.title = ''
-        formData.value.checkBigcate = ''
-        water_text.value = ''
-        wantshow.value = false
-        water_text_open.value = false
-        myshow.value = false
-        selectedImages.value = [];
-        sceneidsPreview.value = [];
-        checkBigcate.value=''
-        checksmallcate.value=''
-        Taro.removeStorageSync('materialList')
         console.log(' formData.value', formData.value);
       } else {
         // 在这里可以添加一些其他逻辑，例如处理数据等
@@ -465,16 +497,13 @@ const sceneids = ref([])
 const sceneidsPreview = ref([])
 const getMaterial = () => {
   const value = Taro.getStorageSync('materialList')
-  console.log(value,"value")
-  const index = sceneids.value.findIndex(item => item === value);
-  // 如果不存在，则将新对象推入数组
-  if (index === -1) {
-    sceneids.value.push({
-      value
-    });
-  }
-  console.log(sceneids.value,"sceneids.value")
-  const sceneid = sceneids.value.map(item =>item.value).join(',').slice(1);
+  sceneids.value.push({
+    value
+  });
+  console.log(sceneids.value,value,"sceneids.value")
+  const selectedSceneid = sceneids.value.map(item => item.value).filter(value => value !== '');
+  console.log(selectedSceneid,sceneids.value,'sceneids.value')
+  const sceneid =  selectedSceneid.length > 1 ? selectedSceneid.join(',') : selectedSceneid[0] || '';
   console.log(sceneid,'scenid')
   Taro.request({
     url: 'https://vr.justeasy.cn/xcx/pano/get_scene_info',

@@ -6,7 +6,6 @@ const url = ref('')
 import { onMounted, ref } from 'vue'
 import Taro, {useDidShow} from "@tarojs/taro";
 useDidShow(() => {
-  console.log(Taro.getCurrentInstance().router.params.url)
   url.value = Taro.getCurrentInstance().router.params.url
 })
 </script>

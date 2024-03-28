@@ -9,8 +9,8 @@
       <template #title>
         <view style="position: relative">
           公开到微官网
-          <view class="vip-icon" v-if="vip === '0'">
-            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon"></image>
+          <view class="vip-icon-wei" v-if="vip === '0'">
+            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon-wei"></image>
           </view>
         </view>
       </template>
@@ -22,8 +22,8 @@
       <template #title>
         <view style="position: relative">
           展示微官网图标
-          <view class="vip-icon" v-if="vip === '0'">
-            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon"></image>
+          <view class="vip-icon-icon" v-if="vip === '0'">
+            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon-icon"></image>
           </view>
         </view>
       </template>
@@ -35,8 +35,8 @@
       <template #title>
         <view style="position: relative">
           去除作品水印
-          <view class="vip-icon" v-if="vip === '0'">
-            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon"></image>
+          <view class="vip-icon-water" v-if="vip === '0'">
+            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon-water"></image>
           </view>
         </view>
       </template>
@@ -48,8 +48,8 @@
       <template #title>
         <view style="position: relative">
           中英文切换
-          <view class="vip-icon" v-if="vip === '0'">
-            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon"></image>
+          <view class="vip-icon-language" v-if="vip === '0'">
+            <image src="../../../images/vip.svg" mode="aspectFit" class="vip-icon-language"></image>
           </view>
         </view>
       </template>

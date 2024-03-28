@@ -11,7 +11,16 @@ export default {
     'pages/BatchOperate/index',
     'pages/Login/index',
     'pages/Material/index',
-    'pages/phoneLogin/index'
+    'pages/phoneLogin/index',
+    'pages/Recharge/index',
+  ],
+  subpackages: [
+    {
+      "root": "modulePay",
+      "pages": [
+        "pages/RechargeM/index",
+      ]
+    }
   ],
   window: {
     backgroundTextStyle: 'light',

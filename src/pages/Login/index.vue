@@ -43,42 +43,55 @@ const quickLogin = async () => {
     return false;
   }
   if (Taro.getEnv() === Taro.ENV_TYPE.TT) {
-    tt.login({
-      success: function(res) {
-        const { code } = res;
-        console.log('登录返回的code：', code);
-        const response = Taro.request({
-          url: 'https://vr.justeasy.cn/xcx/login/dylogin',
-          method: 'GET',
-          data: {
-            code: code,
+    tt.getUserProfile({
+      success(res) {
+        tt.login({
+          success: function(res) {
+            const { code } = res;
+            const response = Taro.request({
+              url: 'https://vr.justeasy.cn/xcx/login/dylogin',
+              method: 'GET',
+              data: {
+                code: code,
+                sign: Taro.getStorageSync('sign')
+              },
+            });
+            console.log('res.data.data.uid',response);
+            response.then((res) => {
+              console.log('res.data.data.uid',res.data.data);
+              const { data, uid } = res.data.data;
+              Taro.setStorageSync('userUid', uid);
+              const userStore = useUserStore();
+              userStore.setUserAndPersist(uid).then(() => {
+                // 在 setUserAndPersist 完成后切换页面
+                setTimeout(() => {
+                  Taro.switchTab({
+                    url: '/pages/Home/index'
+                  });
+                },2000)
+              });
+            })
+            // 进行后续处理，例如发送code到服务器进行验证
           },
+          fail: function(err) {
+            console.error('登录失败：', err);
+          }
         });
-        response.then((res) => {
-          const { data, uid } = res;
-          Taro.setStorageSync('userUid', uid);
-          const userStore = useUserStore();
-          userStore.setUserAndPersist(uid);
-          Taro.switchTab({
-            url: '/pages/Home/index'
-          })
-        })
-        // 进行后续处理，例如发送code到服务器进行验证
       },
-      fail: function(err) {
-        console.error('登录失败：', err);
-      }
+      fail(res) {
+        console.log("getUserProfile 调用失败", res);
+      },
     });
   }else if (Taro.getEnv() === Taro.ENV_TYPE.WEAPP){
     wx.login({
       success: function(res) {
         const { code } = res;
-        console.log('登录返回的code：', code);
         const response = Taro.request({
           url: 'https://vr.justeasy.cn/xcx/login/wxlogin',
           method: 'GET',
           data: {
             code: code,
+            sign: Taro.getStorageSync('sign')
           },
         });
         response.then((res) => {
@@ -125,6 +138,7 @@ const getSubmitLogin = () => {
     data: {
       phoneNumber: phoneNumber.value,
       verificationCode: verificationCode.value,
+      sign: Taro.getStorageSync('sign')
     },
     success: (res) => {
       console.log('登录成功：', res.data);
