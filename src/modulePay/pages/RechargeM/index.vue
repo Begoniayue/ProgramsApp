@@ -1,15 +1,15 @@
-<script setup>
-import './index.scss'
-</script>
-
 <template>
   <view>
     12456
   </view>
 </template>
 
-<style scoped>
-.empty-icon{
+<script setup>
+import './index.scss'
 
-}
+</script>
+
+<style scoped>
+
+
 </style>

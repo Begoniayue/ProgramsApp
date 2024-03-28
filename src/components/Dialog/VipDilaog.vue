@@ -20,7 +20,7 @@ const onCancel = () => {
 }
 const onOk = () => {
   Taro.navigateTo({
-    url: '/modulePay/pages/RechargeM/index',
+    url: '/pages/Recharge/index',
   })
 }
 </script>

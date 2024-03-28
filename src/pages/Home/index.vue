@@ -850,7 +850,7 @@ const toWorkSetting = (panoid,UserVip) => {
 }
 const openVip = () => {
   Taro.navigateTo({
-    url: '/modulePay/pages/RechargeM/index',
+    url: '/pages/Recharge/index',
   })
 }
 const toMoreWorkSetting = (panoid,Vip) => {
@@ -987,7 +987,7 @@ const openInternet = () => {
       })
     } else {
       Taro.navigateTo({
-        url: `/pages/webview/index?url=https://vr.justeasy.cn/pano/micro/introduce.html`
+        url: `/pages/webview/index?url=https://jeapp.justeasy.cn/vr/upgrade.html`
       })
     }
   });
